@@ -44,6 +44,11 @@ let
         fi
       ''}
 
+      # Allow the user to execute commands at the beginning of the X session.
+      if test -f ~/.xprofile; then
+          source ~/.xprofile
+      fi
+
       ${optionalString cfg.displayManager.job.logToJournal ''
         if [ -z "$_DID_SYSTEMD_CAT" ]; then
           export _DID_SYSTEMD_CAT=1
@@ -82,11 +87,6 @@ let
       unset _DID_SYSTEMD_CAT
 
       ${cfg.displayManager.sessionCommands}
-
-      # Allow the user to execute commands at the beginning of the X session.
-      if test -f ~/.xprofile; then
-          source ~/.xprofile
-      fi
 
       # Start systemd user services for graphical sessions
       /run/current-system/systemd/bin/systemctl --user start graphical-session.target
