@@ -266,6 +266,8 @@ in
 
   dotnet-sdk_3 = dotnetCorePackages.sdk_3_1;
 
+  dotnet-sdk_5 = dotnetCorePackages.sdk_5_0;
+
   dotnet-netcore = dotnetCorePackages.netcore_2_1;
 
   dotnet-aspnetcore = dotnetCorePackages.aspnetcore_2_1;
@@ -4605,9 +4607,7 @@ in
   iperf3 = callPackage ../tools/networking/iperf/3.nix { };
   iperf = iperf3;
 
-  ipfs = callPackage ../applications/networking/ipfs {
-    buildGoModule = buildGo114Module;
-  };
+  ipfs = callPackage ../applications/networking/ipfs { };
   ipfs-migrator = callPackage ../applications/networking/ipfs-migrator { };
   ipfs-cluster = callPackage ../applications/networking/ipfs-cluster {
     buildGoModule = buildGo114Module;
@@ -9734,6 +9734,7 @@ in
     inherit (darwin.apple_sdk.frameworks) Security;
   };
   cargo-sweep = callPackage ../development/tools/rust/cargo-sweep { };
+  cargo-sync-readme = callPackage ../development/tools/rust/cargo-sync-readme {};
   cargo-udeps = callPackage ../development/tools/rust/cargo-udeps {
     inherit (darwin.apple_sdk.frameworks) CoreServices Security;
   };
@@ -9992,7 +9993,7 @@ in
   inherit (beam.interpreters)
     erlang erlangR23 erlangR22 erlangR21 erlangR20 erlangR19 erlangR18
     erlang_odbc erlang_javac erlang_odbc_javac erlang_nox erlang_basho_R16B02
-    elixir elixir_1_10 elixir_1_9 elixir_1_8 elixir_1_7 elixir_1_6;
+    elixir elixir_1_10 elixir_1_9 elixir_1_8 elixir_1_7;
 
   inherit (beam.packages.erlang)
     rebar rebar3
@@ -10123,19 +10124,21 @@ in
 
   octave = callPackage ../development/interpreters/octave {
     python = python3;
+    mkDerivation = stdenv.mkDerivation;
     jdk = jdk8; # TODO: remove override https://github.com/NixOS/nixpkgs/pull/89731
   };
   octave-jit = callPackage ../development/interpreters/octave {
     python = python3;
     enableJIT = true;
+    mkDerivation = stdenv.mkDerivation;
     jdk = jdk8; # TODO: remove override https://github.com/NixOS/nixpkgs/pull/89731
   };
-  octaveFull = (lowPrio (libsForQt512.callPackage ../development/interpreters/octave {
+  octaveFull = libsForQt5.callPackage ../development/interpreters/octave {
     python = python3;
     enableQt = true;
     overridePlatforms = ["x86_64-linux" "x86_64-darwin"];
     jdk = jdk8; # TODO: remove override https://github.com/NixOS/nixpkgs/pull/89731
-  }));
+  };
 
   ocropus = callPackage ../applications/misc/ocropus { };
 
@@ -11924,6 +11927,8 @@ in
 
   aubio = callPackage ../development/libraries/aubio { };
 
+  audiality2 = callPackage ../development/libraries/audiality2 { };
+
   audiofile = callPackage ../development/libraries/audiofile {
     inherit (darwin.apple_sdk.frameworks) AudioUnit CoreServices;
   };
@@ -13287,6 +13292,8 @@ in
   libavc1394 = callPackage ../development/libraries/libavc1394 { };
 
   libb2 = callPackage ../development/libraries/libb2 { };
+
+  libbacktrace = callPackage ../development/libraries/libbacktrace { };
 
   libbap = callPackage ../development/libraries/libbap {
     inherit (ocaml-ng.ocamlPackages_4_06) bap ocaml findlib ctypes;
@@ -17914,11 +17921,12 @@ in
 
     nvidiaPackages = dontRecurseIntoAttrs (callPackage ../os-specific/linux/nvidia-x11 { });
 
-    nvidia_x11_legacy304 = nvidiaPackages.legacy_304;
-    nvidia_x11_legacy340 = nvidiaPackages.legacy_340;
-    nvidia_x11_legacy390 = nvidiaPackages.legacy_390;
-    nvidia_x11_beta      = nvidiaPackages.beta;
-    nvidia_x11           = nvidiaPackages.stable;
+    nvidia_x11_legacy304   = nvidiaPackages.legacy_304;
+    nvidia_x11_legacy340   = nvidiaPackages.legacy_340;
+    nvidia_x11_legacy390   = nvidiaPackages.legacy_390;
+    nvidia_x11_beta        = nvidiaPackages.beta;
+    nvidia_x11_vulkan_beta = nvidiaPackages.vulkan_beta;
+    nvidia_x11             = nvidiaPackages.stable;
 
     openrazer = callPackage ../os-specific/linux/openrazer/driver.nix { };
 
@@ -20958,8 +20966,6 @@ in
 
   gnunet = callPackage ../applications/networking/p2p/gnunet { };
 
-  gnunet_git = lowPrio (callPackage ../applications/networking/p2p/gnunet/git.nix { });
-
   gnunet-gtk = callPackage ../applications/networking/p2p/gnunet/gtk.nix { };
 
   gocr = callPackage ../applications/graphics/gocr { };
@@ -23447,9 +23453,7 @@ in
   # this can be changed to python3 once pyside2 is updated to support the latest python version
   syncplay = python37.pkgs.callPackage ../applications/networking/syncplay { };
 
-  inherit (callPackages ../applications/networking/syncthing {
-    buildGoModule = buildGo114Module;
-  })
+  inherit (callPackages ../applications/networking/syncthing { })
     syncthing
     syncthing-cli
     syncthing-discovery
@@ -23769,6 +23773,8 @@ in
   vbindiff = callPackage ../applications/editors/vbindiff { };
 
   vcprompt = callPackage ../applications/version-management/vcprompt { };
+
+  vcs = callPackage ../applications/video/vcs { };
 
   vcv-rack = callPackage ../applications/audio/vcv-rack { };
 
@@ -25078,6 +25084,12 @@ in
 
   kobodeluxe = callPackage ../games/kobodeluxe { };
 
+  koboredux = callPackage ../games/koboredux { };
+
+  koboredux-free = callPackage ../games/koboredux {
+    useProprietaryAssets = false;
+  };
+
   leela-zero = libsForQt5.callPackage ../games/leela-zero { };
 
   legendary-gl = python38Packages.callPackage ../games/legendary-gl { };
@@ -25970,6 +25982,8 @@ in
   niftyseg = callPackage ../applications/science/biology/niftyseg { };
 
   manta = callPackage ../applications/science/biology/manta { };
+
+  obitools3 = callPackage ../applications/science/biology/obitools/obitools3.nix { };
 
   octopus-caller = callPackage ../applications/science/biology/octopus { };
 
