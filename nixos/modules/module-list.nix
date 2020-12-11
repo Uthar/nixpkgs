@@ -320,6 +320,7 @@
   ./services/desktops/tumbler.nix
   ./services/desktops/zeitgeist.nix
   ./services/development/bloop.nix
+  ./services/development/fossil-server.nix
   ./services/development/hoogle.nix
   ./services/development/jupyter/default.nix
   ./services/development/lorri.nix
