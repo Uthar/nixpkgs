@@ -440,7 +440,9 @@ in
       default = false;
       description = ''
         Whether this NixOS machine is a lightweight container running
-        in another NixOS system.
+        in another NixOS system. If set to true, support for nested
+        containers is disabled by default, but can be reenabled by
+        setting <option>boot.enableContainers</option> to true.
       '';
     };
 
@@ -448,7 +450,11 @@ in
       type = types.bool;
       default = !config.boot.isContainer;
       description = ''
-        Whether to enable support for NixOS containers.
+        Whether to enable support for NixOS containers. Defaults to true
+        (at no cost if containers are not actually used), but only if the
+        system is not itself a lightweight container of a host.
+        To enable support for nested containers, this option has to be
+        explicitly set to true (in the outer container).
       '';
     };
 
@@ -463,10 +469,15 @@ in
                 A specification of the desired configuration of this
                 container, as a NixOS module.
               '';
-              type = lib.mkOptionType {
+              type = let
+                confPkgs = if config.pkgs == null then pkgs else config.pkgs;
+              in lib.mkOptionType {
                 name = "Toplevel NixOS config";
-                merge = loc: defs: (import ../../lib/eval-config.nix {
+                merge = loc: defs: (import (confPkgs.path + "/nixos/lib/eval-config.nix") {
                   inherit system;
+                  pkgs = confPkgs;
+                  baseModules = import (confPkgs.path + "/nixos/modules/module-list.nix");
+                  inherit (confPkgs) lib;
                   modules =
                     let
                       extraConfig = {
@@ -515,6 +526,15 @@ in
               '';
             };
 
+            pkgs = mkOption {
+              type = types.nullOr types.attrs;
+              default = null;
+              example = literalExample "pkgs";
+              description = ''
+                Customise which nixpkgs to use for this container.
+              '';
+            };
+
             ephemeral = mkOption {
               type = types.bool;
               default = false;
@@ -526,7 +546,7 @@ in
 
                 Note that this option might require to do some adjustments to the container configuration,
                 e.g. you might want to set
-                <varname>systemd.network.networks.$interface.dhcpConfig.ClientIdentifier</varname> to "mac"
+                <varname>systemd.network.networks.$interface.dhcpV4Config.ClientIdentifier</varname> to "mac"
                 if you use <varname>macvlans</varname> option.
                 This way dhcp client identifier will be stable between the container restarts.
 
@@ -582,7 +602,7 @@ in
               type = with types; attrsOf (submodule { options = networkOptions; });
               default = {};
               description = ''
-                Extra veth-pairs to be created for the container
+                Extra veth-pairs to be created for the container.
               '';
             };
 
@@ -594,24 +614,26 @@ in
               '';
             };
 
-		    timeoutStartSec = mkOption {
-		      type = types.str;
-		      default = "1min";
-		      description = ''
-		        Time for the container to start. In case of a timeout,
-		        the container processes get killed.
-		        See <citerefentry><refentrytitle>systemd.time</refentrytitle>
-		        <manvolnum>7</manvolnum></citerefentry>
-		        for more information about the format.
-		       '';
-		    };
+            timeoutStartSec = mkOption {
+              type = types.str;
+              default = "1min";
+              description = ''
+                Time for the container to start. In case of a timeout,
+                the container processes get killed.
+                See <citerefentry><refentrytitle>systemd.time</refentrytitle>
+                <manvolnum>7</manvolnum></citerefentry>
+                for more information about the format.
+               '';
+            };
 
             bindMounts = mkOption {
-              type = with types; loaOf (submodule bindMountOpts);
+              type = with types; attrsOf (submodule bindMountOpts);
               default = {};
-              example = { "/home" = { hostPath = "/home/alice";
-                                      isReadOnly = false; };
-                        };
+              example = literalExample ''
+                { "/home" = { hostPath = "/home/alice";
+                              isReadOnly = false; };
+                }
+              '';
 
               description =
                 ''
