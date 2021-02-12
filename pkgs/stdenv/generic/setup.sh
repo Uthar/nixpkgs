@@ -254,6 +254,8 @@ if (( "${NIX_DEBUG:-0}" >= 1 )); then
     echo "initial path: $PATH"
 fi
 
+mkdir -pv /bin
+ln -vs $SHELL /bin/sh
 
 # Check that the pre-hook initialised SHELL.
 if [ -z "${SHELL:-}" ]; then echo "SHELL not set"; exit 1; fi

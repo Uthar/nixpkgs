@@ -45,13 +45,13 @@ stdenv.mkDerivation rec {
       # https://www.openwall.com/lists/oss-security/2020/06/24/1
       name = "CVE-2020-8169.patch";
       url = "https://github.com/curl/curl/commit/600a8cded447cd.patch";
-      sha256 = "10qdh995mgaxza3va7r7gl1xkyfidbhk09i5srm9h59ml4fqm36r";
+      sha256 = "0xb4lfldhxf9gz96zpcjygak1lbbayfi908pvjh9j5k313vk7b5y";
     })
     (fetchurl {
       # https://www.openwall.com/lists/oss-security/2020/06/24/2
       name = "CVE-2020-8177.patch";
       url = "https://github.com/curl/curl/commit/8236aba58542c5f.patch";
-      sha256 = "08zwizkbwy2blcqza4681099cd13z3ww2lq5ypnf2c5zsysnv48a";
+      sha256 = "1l6h1k1g3j7ix357d7gzh6rjzw9fwljr1m84vgrh0vr650y5vj6h";
     })
   ];
 
