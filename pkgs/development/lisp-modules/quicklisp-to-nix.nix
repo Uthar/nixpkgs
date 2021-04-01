@@ -577,6 +577,20 @@ let quicklisp-to-nix-packages = rec {
        }));
 
 
+  "cffi-libffi" = buildLispPackage
+    ((f: x: (x // (f x)))
+       (qlOverrides."cffi-libffi" or (x: {}))
+       (import ./quicklisp-to-nix-output/cffi-libffi.nix {
+         inherit fetchurl;
+           "alexandria" = quicklisp-to-nix-packages."alexandria";
+           "babel" = quicklisp-to-nix-packages."babel";
+           "cffi" = quicklisp-to-nix-packages."cffi";
+           "cffi-grovel" = quicklisp-to-nix-packages."cffi-grovel";
+           "cffi-toolchain" = quicklisp-to-nix-packages."cffi-toolchain";
+           "trivial-features" = quicklisp-to-nix-packages."trivial-features";
+       }));
+
+
   "puri" = buildLispPackage
     ((f: x: (x // (f x)))
        (qlOverrides."puri" or (x: {}))
@@ -1864,6 +1878,7 @@ let quicklisp-to-nix-packages = rec {
          inherit fetchurl;
            "misc-extensions" = quicklisp-to-nix-packages."misc-extensions";
            "mt19937" = quicklisp-to-nix-packages."mt19937";
+           "named-readtables" = quicklisp-to-nix-packages."named-readtables";
        }));
 
 
@@ -2649,6 +2664,22 @@ let quicklisp-to-nix-packages = rec {
            "cffi-grovel" = quicklisp-to-nix-packages."cffi-grovel";
            "cffi-toolchain" = quicklisp-to-nix-packages."cffi-toolchain";
            "trivial-features" = quicklisp-to-nix-packages."trivial-features";
+       }));
+
+
+  "cl-liballegro" = buildLispPackage
+    ((f: x: (x // (f x)))
+       (qlOverrides."cl-liballegro" or (x: {}))
+       (import ./quicklisp-to-nix-output/cl-liballegro.nix {
+         inherit fetchurl;
+           "alexandria" = quicklisp-to-nix-packages."alexandria";
+           "babel" = quicklisp-to-nix-packages."babel";
+           "cffi" = quicklisp-to-nix-packages."cffi";
+           "cffi-grovel" = quicklisp-to-nix-packages."cffi-grovel";
+           "cffi-libffi" = quicklisp-to-nix-packages."cffi-libffi";
+           "cffi-toolchain" = quicklisp-to-nix-packages."cffi-toolchain";
+           "trivial-features" = quicklisp-to-nix-packages."trivial-features";
+           "trivial-garbage" = quicklisp-to-nix-packages."trivial-garbage";
        }));
 
 

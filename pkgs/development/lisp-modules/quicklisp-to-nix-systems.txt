@@ -33,6 +33,7 @@ cl-html5-parser
 cl-jpeg
 cl-json
 cl-l10n
+cl-liballegro
 cl-libuv
 cl-mysql
 cl-pdf

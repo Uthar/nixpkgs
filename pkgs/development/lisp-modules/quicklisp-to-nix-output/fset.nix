@@ -7,7 +7,7 @@ rec {
 See: http://www.ergy.com/FSet.html
 '';
 
-  deps = [ args."misc-extensions" args."mt19937" ];
+  deps = [ args."misc-extensions" args."mt19937" args."named-readtables" ];
 
   src = fetchurl {
     url = ''http://beta.quicklisp.org/archive/fset/2017-10-19/fset-20171019-git.tgz'';
@@ -26,6 +26,7 @@ See: http://www.ergy.com/FSet.html
     http://beta.quicklisp.org/archive/fset/2017-10-19/fset-20171019-git.tgz MD5
     dc8de5917c513302dd0e135e6c133978 NAME fset FILENAME fset DEPS
     ((NAME misc-extensions FILENAME misc-extensions)
-     (NAME mt19937 FILENAME mt19937))
-    DEPENDENCIES (misc-extensions mt19937) VERSION 20171019-git SIBLINGS NIL
-    PARASITES NIL) */
+     (NAME mt19937 FILENAME mt19937)
+     (NAME named-readtables FILENAME named-readtables))
+    DEPENDENCIES (misc-extensions mt19937 named-readtables) VERSION
+    20171019-git SIBLINGS NIL PARASITES NIL) */

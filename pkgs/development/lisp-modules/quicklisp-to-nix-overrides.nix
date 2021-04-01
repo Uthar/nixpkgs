@@ -32,9 +32,9 @@ in
       '';
       preInstall = ''
         type gcc
-        mkdir -p "$out/lib/common-lisp/" 
+        mkdir -p "$out/lib/common-lisp/"
         cp -r . "$out/lib/common-lisp/cl-fuse/"
-        "gcc" "-x" "c" "$out/lib/common-lisp/cl-fuse/fuse-launcher.c-minus" "-fPIC" "--shared" "-lfuse" "-o" "$out/lib/common-lisp/cl-fuse/libfuse-launcher.so"        
+        "gcc" "-x" "c" "$out/lib/common-lisp/cl-fuse/fuse-launcher.c-minus" "-fPIC" "--shared" "-lfuse" "-o" "$out/lib/common-lisp/cl-fuse/libfuse-launcher.so"
       '';
     };
   };
@@ -62,6 +62,7 @@ in
     };
   };
   cl-colors = skipBuildPhase;
+  cl-liballegro = addNativeLibs [pkgs.allegro5];
   cl-libuv = addNativeLibs [pkgs.libuv];
   cl-async-ssl = addNativeLibs [pkgs.openssl (import ./openssl-lib-marked.nix)];
   cl-async-test = addNativeLibs [pkgs.openssl];
@@ -90,6 +91,14 @@ $out/lib/common-lisp/query-fs"
     };
   };
   cffi = addNativeLibs [pkgs.libffi];
+  cffi-libffi = x: {
+    propagatedBuildInputs = [pkgs.libffi];
+    overrides = y: (x.overrides y) // {
+      prePatch = ((x.overrides y).prePatch or "") + ''
+        sed -i 's,libffi.so.7,${pkgs.libffi}/lib/libffi.so.7.1.0,' libffi/libffi.lisp
+      '';
+    };
+  };
   cl-mysql = x: {
     propagatedBuildInputs = [pkgs.libmysqlclient];
     overrides = y: (x.overrides y) // {
@@ -134,15 +143,15 @@ $out/lib/common-lisp/query-fs"
         @@ -155,7 +155,7 @@
                           ,(unique-dir-name)))
             (user-homedir-pathname)))
-         
+
         -(defvar *fasl-directory* (default-fasl-dir)
         +(defvar *fasl-directory* #P"$out/lib/common-lisp/swank/fasl/"
            "The directory where fasl files should be placed.")
-         
+
          (defun binary-pathname (src-pathname binary-dir)
         @@ -277,12 +277,7 @@
                           (contrib-dir src-dir))))
-         
+
          (defun delete-stale-contrib-fasl-files (swank-files contrib-files fasl-dir)
         -  (let ((newest (reduce #'max (mapcar #'file-write-date swank-files))))
         -    (dolist (src contrib-files)
@@ -151,7 +160,7 @@ $out/lib/common-lisp/query-fs"
         -                   (<= (file-write-date fasl) newest))
         -          (delete-file fasl))))))
         +  (declare (ignore swank-files contrib-files fasl-dir)))
-         
+
          (defun compile-contribs (&key (src-dir (contrib-dir *source-directory*))
                                     (fasl-dir (contrib-dir *fasl-directory*))
         EOD
