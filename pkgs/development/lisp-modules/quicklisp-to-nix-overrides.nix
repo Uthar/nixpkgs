@@ -107,6 +107,7 @@ $out/lib/common-lisp/query-fs"
       '';
     };
   };
+  cl-opengl = addNativeLibs [pkgs.libGL];
   cl-ppcre-template = x: {
     overrides = y: (x.overrides y) // {
       postPatch = ''

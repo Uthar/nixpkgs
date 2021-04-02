@@ -36,6 +36,7 @@ cl-l10n
 cl-liballegro
 cl-libuv
 cl-mysql
+cl-opengl
 cl-pdf
 cl-ppcre
 cl-ppcre-template

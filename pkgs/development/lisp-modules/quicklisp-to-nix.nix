@@ -577,6 +577,16 @@ let quicklisp-to-nix-packages = rec {
        }));
 
 
+  "float-features" = buildLispPackage
+    ((f: x: (x // (f x)))
+       (qlOverrides."float-features" or (x: {}))
+       (import ./quicklisp-to-nix-output/float-features.nix {
+         inherit fetchurl;
+           "documentation-utils" = quicklisp-to-nix-packages."documentation-utils";
+           "trivial-indent" = quicklisp-to-nix-packages."trivial-indent";
+       }));
+
+
   "cffi-libffi" = buildLispPackage
     ((f: x: (x // (f x)))
        (qlOverrides."cffi-libffi" or (x: {}))
@@ -2638,6 +2648,21 @@ let quicklisp-to-nix-packages = rec {
            "iterate" = quicklisp-to-nix-packages."iterate";
            "uiop" = quicklisp-to-nix-packages."uiop";
            "zpb-ttf" = quicklisp-to-nix-packages."zpb-ttf";
+       }));
+
+
+  "cl-opengl" = buildLispPackage
+    ((f: x: (x // (f x)))
+       (qlOverrides."cl-opengl" or (x: {}))
+       (import ./quicklisp-to-nix-output/cl-opengl.nix {
+         inherit fetchurl;
+           "alexandria" = quicklisp-to-nix-packages."alexandria";
+           "babel" = quicklisp-to-nix-packages."babel";
+           "cffi" = quicklisp-to-nix-packages."cffi";
+           "documentation-utils" = quicklisp-to-nix-packages."documentation-utils";
+           "float-features" = quicklisp-to-nix-packages."float-features";
+           "trivial-features" = quicklisp-to-nix-packages."trivial-features";
+           "trivial-indent" = quicklisp-to-nix-packages."trivial-indent";
        }));
 
 
