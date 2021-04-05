@@ -554,7 +554,7 @@ in
 
   _1password = callPackage ../applications/misc/1password { };
 
-  _1password-gui = callPackage ../tools/security/1password-gui { };
+  _1password-gui = callPackage ../applications/misc/1password-gui { };
 
   _6tunnel = callPackage ../tools/networking/6tunnel { };
 
@@ -2065,9 +2065,7 @@ in
 
   gringo = callPackage ../tools/misc/gringo { };
 
-  grobi = callPackage ../tools/X11/grobi {
-    buildGoModule = buildGo114Module;
-  };
+  grobi = callPackage ../tools/X11/grobi { };
 
   gscan2pdf = callPackage ../applications/graphics/gscan2pdf { };
 
@@ -2157,7 +2155,7 @@ in
 
   long-shebang = callPackage ../misc/long-shebang {};
 
-  lowdown = callPackage ../tools/typesetting/lowdown { };
+  inherit (callPackage ../tools/typesetting/lowdown { }) lowdown lowdown_0_8;
 
   numatop = callPackage ../os-specific/linux/numatop { };
 
@@ -2693,7 +2691,7 @@ in
 
   circus = callPackage ../tools/networking/circus { };
 
-  citrix_workspace = citrix_workspace_20_12_0;
+  citrix_workspace = citrix_workspace_21_03_0;
 
   inherit (callPackage ../applications/networking/remote/citrix-workspace { })
     citrix_workspace_20_04_0
@@ -2701,6 +2699,8 @@ in
     citrix_workspace_20_09_0
     citrix_workspace_20_10_0
     citrix_workspace_20_12_0
+    citrix_workspace_21_01_0
+    citrix_workspace_21_03_0
   ;
 
   citra = libsForQt5.callPackage ../misc/emulators/citra { };
@@ -2948,7 +2948,9 @@ in
     cudatoolkit_10_1
     cudatoolkit_10_2
     cudatoolkit_11
-    cudatoolkit_11_0;
+    cudatoolkit_11_0
+    cudatoolkit_11_1
+    cudatoolkit_11_2;
 
   cudatoolkit = cudatoolkit_10;
 
@@ -2967,9 +2969,23 @@ in
     cudnn_cudatoolkit_10_1
     cudnn_cudatoolkit_10_2
     cudnn_cudatoolkit_11
-    cudnn_cudatoolkit_11_0;
+    cudnn_cudatoolkit_11_0
+    cudnn_cudatoolkit_11_1
+    cudnn_cudatoolkit_11_2;
 
   cudnn = cudnn_cudatoolkit_10;
+
+  cutensorPackages = callPackages ../development/libraries/science/math/cutensor { };
+  inherit (cutensorPackages)
+    cutensor_cudatoolkit_10
+    cutensor_cudatoolkit_10_1
+    cutensor_cudatoolkit_10_2
+    cutensor_cudatoolkit_11
+    cutensor_cudatoolkit_11_0
+    cutensor_cudatoolkit_11_1
+    cutensor_cudatoolkit_11_2;
+
+  cutensor = cutensor_cudatoolkit_10;
 
   curlFull = curl.override {
     idnSupport = true;
@@ -3351,7 +3367,7 @@ in
 
   volctl = callPackage ../tools/audio/volctl { };
 
-  vorta = python3Packages.callPackage ../applications/backup/vorta { };
+  vorta = libsForQt5.callPackage ../applications/backup/vorta { };
 
   utahfs = callPackage ../applications/networking/utahfs { };
 
@@ -4569,11 +4585,12 @@ in
   iperf = iperf3;
 
   ipfs = ipfs_0_6;
-  ipfs_latest = ipfs_0_7;
+  ipfs_latest = ipfs_0_8;
   ipfs_0_6 = callPackage ../applications/networking/ipfs/0.6.nix {
     buildGoModule = buildGo114Module;
   };
   ipfs_0_7 = callPackage ../applications/networking/ipfs/0.7.nix { };
+  ipfs_0_8 = callPackage ../applications/networking/ipfs/0.8.nix { };
 
   ipfs-migrator = callPackage ../applications/networking/ipfs-migrator { };
   ipfs-cluster = callPackage ../applications/networking/ipfs-cluster {
@@ -5714,7 +5731,7 @@ in
   grocy = callPackage ../servers/grocy { };
 
   inherit (callPackage ../servers/nextcloud {})
-    nextcloud17 nextcloud18 nextcloud19 nextcloud20;
+    nextcloud17 nextcloud18 nextcloud19 nextcloud20 nextcloud21;
 
   nextcloud-client = libsForQt5.callPackage ../applications/networking/nextcloud-client { };
 
@@ -5738,7 +5755,8 @@ in
 
   noip = callPackage ../tools/networking/noip { };
 
-  nomad = nomad_0_11;
+  nomad = nomad_0_12;
+
   # Nomad never updates major go versions within a release series and is unsupported
   # on Go versions that it did not ship with. Due to historic bugs when compiled
   # with different versions we pin Go for all versions.
@@ -5981,20 +5999,19 @@ in
 
   opensm = callPackage ../tools/networking/opensm { };
 
-  openssh =
-    callPackage ../tools/networking/openssh {
-      hpnSupport = false;
-      etcDir = "/etc/ssh";
-      pam = if stdenv.isLinux then pam else null;
-    };
+  opensshPackages = dontRecurseIntoAttrs (callPackage ../tools/networking/openssh {});
 
-  openssh_hpn = pkgs.appendToName "with-hpn" (openssh.override {
-    hpnSupport = true;
-  });
+  openssh = opensshPackages.openssh.override {
+    etcDir = "/etc/ssh";
+  };
 
-  openssh_gssapi = pkgs.appendToName "with-gssapi" (openssh.override {
-    withGssapiPatches = true;
-  });
+  openssh_hpn = opensshPackages.openssh_hpn.override {
+    etcDir = "/etc/ssh";
+  };
+
+  openssh_gssapi = opensshPackages.openssh_gssapi.override {
+    etcDir = "/etc/ssh";
+  };
 
   opensp = callPackage ../tools/text/sgml/opensp { };
 
@@ -7038,6 +7055,8 @@ in
 
   ssh-chat = callPackage ../applications/networking/instant-messengers/ssh-chat { };
 
+  ssh-to-pgp = callPackage ../tools/security/ssh-to-pgp { };
+
   suricata = callPackage ../applications/networking/ids/suricata {
     python = python3;
   };
@@ -7587,8 +7606,6 @@ in
   unrpa = with python3Packages; toPythonApplication unrpa;
 
   untex = callPackage ../tools/text/untex { };
-
-  untrunc = callPackage ../tools/video/untrunc { };
 
   untrunc-anthwlock = callPackage ../tools/video/untrunc-anthwlock { };
 
@@ -9575,10 +9592,14 @@ in
   rust_1_45 = callPackage ../development/compilers/rust/1_45.nix {
     inherit (darwin.apple_sdk.frameworks) CoreFoundation Security;
   };
+  rust_1_49 = callPackage ../development/compilers/rust/1_49.nix {
+    inherit (darwin.apple_sdk.frameworks) CoreFoundation Security;
+  };
   rust = rust_1_45;
 
   rustPackages_1_44 = rust_1_44.packages.stable;
   rustPackages_1_45 = rust_1_45.packages.stable;
+  rustPackages_1_49 = rust_1_49.packages.stable;
   rustPackages = rustPackages_1_45;
 
   inherit (rustPackages) cargo clippy rustc rustPlatform;
@@ -9689,9 +9710,10 @@ in
   rust-cbindgen = callPackage ../development/tools/rust/cbindgen {
     inherit (darwin.apple_sdk.frameworks) Security;
   };
-  rust-cbindgen_0_15 = callPackage ../development/tools/rust/cbindgen/0_15.nix {
+  rust-cbindgen_latest = callPackage ../development/tools/rust/cbindgen/0_17.nix {
     inherit (darwin.apple_sdk.frameworks) Security;
   };
+
 
   rustup = callPackage ../development/tools/rust/rustup {
     inherit (darwin.apple_sdk.frameworks) CoreServices Security;
@@ -12473,6 +12495,10 @@ in
       rev = "v${version}";
       sha256 = "09jz2fzv0zl5058s0g1cpnw87a2rgg8wnjwlygi18i2n9nn6m0ad";
     };
+    meta.knownVulnerabilities = [
+      "CVE-2020-12278"
+      "CVE-2020-12279"
+    ];
   });
 
   libgit2-glib = callPackage ../development/libraries/libgit2-glib { };
@@ -13056,6 +13082,8 @@ in
   jsoncpp = callPackage ../development/libraries/jsoncpp { };
 
   jsonnet = callPackage ../development/compilers/jsonnet { };
+
+  jsonnet-bundler = callPackage ../development/tools/jsonnet-bundler { };
 
   go-jsonnet = callPackage ../development/compilers/go-jsonnet { };
 
@@ -16415,7 +16443,7 @@ in
   gofish = callPackage ../servers/gopher/gofish { };
 
   grafana = callPackage ../servers/monitoring/grafana {
-    buildGoModule = buildGo114Module;
+    buildGoModule = buildGo115Module;
   };
 
   grafana-agent = callPackage ../servers/monitoring/grafana-agent { };
@@ -17692,14 +17720,14 @@ in
     ];
   };
 
-  linux_5_8 = callPackage ../os-specific/linux/kernel/linux-5.8.nix {
+  linux_5_10 = callPackage ../os-specific/linux/kernel/linux-5.10.nix {
     kernelPatches = [
       kernelPatches.bridge_stp_helper
       kernelPatches.request_key_helper
     ];
   };
 
-  linux_5_9 = callPackage ../os-specific/linux/kernel/linux-5.9.nix {
+  linux_5_11 = callPackage ../os-specific/linux/kernel/linux-5.11.nix {
     kernelPatches = [
       kernelPatches.bridge_stp_helper
       kernelPatches.request_key_helper
@@ -17940,7 +17968,7 @@ in
 
   # Update this when adding the newest kernel major version!
   # And update linux_latest_for_hardened below if the patches are already available
-  linuxPackages_latest = linuxPackages_5_9;
+  linuxPackages_latest = linuxPackages_5_11;
   linux_latest = linuxPackages_latest.kernel;
 
   # Realtime kernel packages.
@@ -17962,8 +17990,8 @@ in
   linuxPackages_4_14 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_4_14);
   linuxPackages_4_19 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_4_19);
   linuxPackages_5_4 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_5_4);
-  linuxPackages_5_8 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_5_8);
-  linuxPackages_5_9 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_5_9);
+  linuxPackages_5_10 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_5_10);
+  linuxPackages_5_11 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_5_11);
 
   # When adding to the list above:
   # - Update linuxPackages_latest to the latest version
@@ -18001,7 +18029,7 @@ in
   # Hardened Linux
   hardenedLinuxPackagesFor = kernel': overrides:
     let # Note: We use this hack since the hardened patches can lag behind and we don't want to delay updates:
-      linux_latest_for_hardened = pkgs.linux_5_9;
+      linux_latest_for_hardened = pkgs.linux_5_11;
       kernel = (if kernel' == pkgs.linux_latest then linux_latest_for_hardened else kernel').override overrides;
     in linuxPackagesFor (kernel.override {
       structuredExtraConfig = import ../os-specific/linux/kernel/hardened/config.nix {
@@ -20620,7 +20648,6 @@ in
 
   firefoxPackages = recurseIntoAttrs (callPackage ../applications/networking/browsers/firefox/packages.nix {
     callPackage = pkgs.newScope {
-      inherit (rustPackages_1_44) cargo rustc;
       libpng = libpng_apng;
       python = python2;
       gnused = gnused_422;
@@ -21240,7 +21267,7 @@ in
     libde265 = null;
   };
 
-  imagemagick = callPackage ../applications/graphics/ImageMagick {
+  imagemagick = callPackage ../applications/graphics/ImageMagick/6.x.nix {
     inherit (darwin.apple_sdk.frameworks) ApplicationServices;
     ghostscript = null;
   };
@@ -22444,8 +22471,8 @@ in
   osmo = callPackage ../applications/office/osmo { };
 
   palemoon = callPackage ../applications/networking/browsers/palemoon {
-    # https://www.palemoon.org/sourcecode.shtml
-    stdenv = gcc7Stdenv;
+    # https://developer.palemoon.org/build/linux/
+    stdenv = gcc8Stdenv;
   };
 
   webbrowser = callPackage ../applications/networking/browsers/webbrowser {};
@@ -23205,8 +23232,6 @@ in
   spek = callPackage ../applications/audio/spek { };
 
   spotify = callPackage ../applications/audio/spotify {
-    libgcrypt = libgcrypt_1_5;
-    libpng = libpng12;
     curl = curl.override {
       sslSupport = false; gnutlsSupport = true;
     };
@@ -23301,9 +23326,7 @@ in
   # this can be changed to python3 once pyside2 is updated to support the latest python version
   syncplay = python37.pkgs.callPackage ../applications/networking/syncplay { };
 
-  inherit (callPackages ../applications/networking/syncthing {
-    buildGoModule = buildGo114Module;
-  })
+  inherit (callPackages ../applications/networking/syncthing { })
     syncthing
     syncthing-cli
     syncthing-discovery
@@ -26902,10 +26925,7 @@ in
     nixFlakes;
 
   nixops = callPackage ../tools/package-management/nixops { };
-
-  nixops_1_6_1 = callPackage ../tools/package-management/nixops/nixops-v1_6_1.nix {};
-
-  nixopsUnstable = lowPrio (callPackage ../tools/package-management/nixops/unstable.nix { });
+  nixopsUnstable = nixops;
 
   nixops-dns = callPackage ../tools/package-management/nixops/nixops-dns.nix { };
 
