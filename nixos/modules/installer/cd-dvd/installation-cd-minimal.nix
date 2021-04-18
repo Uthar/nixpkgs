@@ -11,4 +11,8 @@
   isoImage.edition = "minimal";
 
   fonts.fontconfig.enable = false;
+
+  # Include the closure of a full system for offline installation.
+  isoImage.storeContents =
+    [ (import <nixpkgs/nixos> { configuration = /etc/nixos/configuration.nix; }).system ];
 }
