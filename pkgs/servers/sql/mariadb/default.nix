@@ -6,6 +6,7 @@
 , numactl # NUMA Support
 , withStorageMroonga ? true, kytea, libsodium, msgpack, zeromq
 , withStorageRocks ? true
+, withSystemd ? stdenv.hostPlatform.isLinux
 }:
 
 with lib;
@@ -38,7 +39,8 @@ common = rec { # attributes common to both builds
 
   buildInputs = [
     ncurses openssl zlib pcre2 libiconv curl
-  ] ++ optionals stdenv.hostPlatform.isLinux [ libaio systemd libkrb5 ]
+  ] ++ optionals stdenv.hostPlatform.isLinux [ libaio libkrb5 ]
+    ++ optionals withSystemd [ systemd ]
     ++ optionals stdenv.hostPlatform.isDarwin [ perl cctools CoreServices ]
     ++ optional (!stdenv.hostPlatform.isDarwin) [ jemalloc ];
 
@@ -202,6 +204,7 @@ server = stdenv.mkDerivation (common // {
     mv "$out"/OFF/suite/plugins/pam/pam_mariadb_mtr.so "$out"/share/pam/lib/security
     mv "$out"/OFF/suite/plugins/pam/mariadb_mtr "$out"/share/pam/etc/security
     rm -r "$out"/OFF
+  ' + optionalString withSystemd ''
     sed -i 's/-mariadb/-mysql/' "$out"/bin/galera_new_cluster
   '';
 
