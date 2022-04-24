@@ -21309,7 +21309,20 @@ with pkgs;
     texLive = null;
   };
 
+  inherit (callPackage ../development/lisp-modules {})
+    lispPackagesFor
+    lispWithPackages
+    abclPackages
+    eclPackages
+    cclPackages
+    sbclPackages
+    abclWithPackages
+    eclWithPackages
+    cclWithPackages
+    sbclWithPackages
+  ;
 
+  lispPackages = sbclPackages;
 
   ### DEVELOPMENT / PERL MODULES
 
