@@ -79,8 +79,8 @@
   (let* ((db (sqlite:connect (database-url database)))
          (systems-url (str:concat (dist-url repository) "systems.txt"))
          (releases-url (str:concat (dist-url repository) "releases.txt"))
-         (systems-lines (rest (butlast (str:split #\Newline (dex:get systems-url)))))
-         (releases-lines (rest (butlast (str:split #\Newline (dex:get releases-url))))))
+         (systems-lines (rest (butlast (str:split #\Newline (dex:get systems-url :force-string t)))))
+         (releases-lines (rest (butlast (str:split #\Newline (dex:get releases-url :force-string t))))))
 
     (flet ((sql-query (sql &rest params)
              (apply #'sqlite:execute-to-list (list* db sql params))))
@@ -128,11 +128,17 @@
                   select
                     name, version, asd, url,
                     (select json_group_array(
-                       json_array(value, (select version from pkg where name=value))
+                       json_array(value, coalesce((select version from pkg where name=value),
+                                                  (select version from system where name=value)))
                      )
                      from json_each(deps)) as deps
                   from pkg"
                  )))
+
+          (with-open-file (f "pkg.txt" :direction :output
+                                       :if-exists :append
+                                       :if-does-not-exist :create)
+            (format f "=========~%~a~%" systems))
 
           ;; First pass: insert system and source tarball informaton.
           ;; Can't insert dependency information, because this works
@@ -170,7 +176,10 @@
                      ((select id from system where name=? and version=?),
                       (select id from system where name=? and version=?))"
                     name version
-                    dep-name dep-version))))))))))
+                    dep-name dep-version)))))))))
+
+  (sqlite:disconnect db)
+    )
 
   (write-char #\Newline *error-output*))
 

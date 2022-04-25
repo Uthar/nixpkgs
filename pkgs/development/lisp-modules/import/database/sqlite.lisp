@@ -38,9 +38,8 @@
                          (str:split #\;)
                          (mapcar #'str:trim)
                          (remove-if #'str:emptyp))))
-    (sqlite:with-transaction db
-      (dolist (s statements)
-        (sqlite:execute-non-query db s)))))
+    (dolist (s statements)
+      (sqlite:execute-non-query db s))))
 
 
 ;; Writing Nix
@@ -87,11 +86,11 @@ in rec {")
       ;; nothing else depends on these, except for generic-cl
       ;; itself. This can be discovered by the query:
       ;;
-      ;;   select 
-      ;;     name, 
-      ;;     (select name from system where id = dep.dep_id) as depname 
+      ;;   select
+      ;;     name,
+      ;;     (select name from system where id = dep.dep_id) as depname
       ;;   from system
-      ;;   join dep on dep.system_id = system.id 
+      ;;   join dep on dep.system_id = system.id
       ;;   where depname like 'generic-cl.%'
       ;;   group by name
       ;;
@@ -109,7 +108,7 @@ in rec {")
        "update fixed_systems set systems = json_array(name)")
 
       (sqlite:execute-non-query db
-       "with recursive 
+       "with recursive
         alldeps(system, subsystem, depid) as (
             select s.name, s.name, d.dep_id as depid
             from system s
@@ -128,7 +127,7 @@ in rec {")
         sysnames as (select json_group_array(name)
                      from system where id in depids
                      and name like 'generic-cl.%')
-        update fixed_systems 
+        update fixed_systems
         set systems = json_insert((select * from sysnames),'$[#]',name),
             deps    = (select * from depnames)
         where name='generic-cl'")
@@ -185,9 +184,14 @@ in rec {")
                                         `(:string ,sys))
                                       (coerce (json:parse systems) 'list))))
                 ("lispLibs" (:list
-                             ,@(mapcar (lambda (dep)
+                             ,@(sort
+                                (remove-duplicates
+                                (mapcar (lambda (dep)
                                          `(:symbol ,dep))
                                        (remove "asdf"
                                                (str:split-omit-nulls #\, deps)
-                                               :test #'string=))))))))))
+                                               :test #'string=))
+                                :test #'equal)
+                                #'string
+                                :key #'second)))))))))
       (format f "~%}"))))

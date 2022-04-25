@@ -1,3 +1,5 @@
+PRAGMA journal_mode=WAL;
+
 CREATE TABLE IF NOT EXISTS sha256 (
        id        integer PRIMARY KEY AUTOINCREMENT,
        url       text    UNIQUE,
@@ -38,4 +40,4 @@ CREATE VIEW IF NOT EXISTS system_view AS
   JOIN src ON src.system_id = sys.id
   JOIN sha256 sha ON sha.id = src.sha256_id
   LEFT JOIN dep ON dep.system_id = sys.id
-  GROUP BY sys.name;
+  GROUP BY sys.name, sys.version;

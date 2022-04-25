@@ -24,10 +24,18 @@
    :dist-url
    "https://beta.quicklisp.org/dist/quicklisp/2021-12-30/"))
 
+(defvar *ultralisp*
+  (make-instance
+   'quicklisp-repository
+   :dist-url
+   "http://dist.ultralisp.org/ultralisp/20220425003000/"))
+
 (defun run-importers ()
   (import-lisp-packages *quicklisp* *sqlite*)
-  (format t "Imported packages from quicklisp to ~A~%"
-          (truename "packages.sqlite")))
+  (format t "Imported packages from quicklisp to ~A~%" (truename "packages.sqlite"))
+  (import-lisp-packages *ultralisp* *sqlite*)
+  (format t "Imported packages from ultralisp to ~A~%" (truename "packages.sqlite"))
+  )
 
 (defun gen-nix-file ()
   (database->nix-expression *sqlite* "imported.nix")
