@@ -88,6 +88,7 @@ let
     in fixed.lispLibs;
 
   # Returns a flattened dependency tree without duplicates
+  # This is probably causing performance problems...
   flattenedDeps = lispLibs:
     let
       walk = acc: node:
@@ -170,26 +171,26 @@ let
       # The "//" ending is important as it makes asdf recurse into
       # subdirectories when searching for .asd's. This is to support
       # projects where .asd's aren't in the root directory.
-      CL_SOURCE_REGISTRY = makeSearchPath "/" (flattenedDeps lispLibs);
+      # CL_SOURCE_REGISTRY = makeSearchPath "/" (flattenedDeps lispLibs);
 
       # Tell lisp where to find native dependencies
       #
       # Normally generated from lispLibs, but LD_LIBRARY_PATH as a
       # derivation attr itself can be used as an extension point when
       # the libs are not in a '/lib' subdirectory
-      LD_LIBRARY_PATH =
-        let
-          deps = flattenedDeps lispLibs;
-          libs = concatMap (x: x.nativeLibs) deps;
-          paths = filter (x: x != "") (map (x: x.LD_LIBRARY_PATH) deps);
-          path =
-            makeLibraryPath libs
-            + optionalString (length paths != 0) ":"
-            + concatStringsSep ":" paths;
-        in concatStringsSep ":" (unique (splitString ":" path));
+      # LD_LIBRARY_PATH =
+      #   let
+      #     deps = flattenedDeps lispLibs;
+      #     libs = concatMap (x: x.nativeLibs) deps;
+      #     paths = filter (x: x != "") (map (x: x.LD_LIBRARY_PATH) deps);
+      #     path =
+      #       makeLibraryPath libs
+      #       + optionalString (length paths != 0) ":"
+      #       + concatStringsSep ":" paths;
+      #   in concatStringsSep ":" (unique (splitString ":" path));
 
       # Java libraries For ABCL
-      CLASSPATH = makeSearchPath "share/java/*" (concatMap (x: x.javaLibs) (flattenedDeps lispLibs));
+      # CLASSPATH = makeSearchPath "share/java/*" (concatMap (x: x.javaLibs) (flattenedDeps lispLibs));
 
       # Portable script to build the systems.
       #
@@ -475,56 +476,57 @@ let
   # first finds the wrong override, when there were multiple overrides?
   #
   fixDuplicateAsds = libs: clpkgs:
-    let
-      libsFlat = flattenedDeps libs;
-      asdCounts = frequencies (concatMap (getAttr "asds") libsFlat);
-      duplicates = attrNames (filterAttrs (n: v: v > 1) asdCounts);
-      combineSlashySubsystems = asd:
-        let
-          providers = filter (lib: elem asd lib.asds) libsFlat;
-          lispLibs = unique (concatMap (lib: lib.lispLibs) providers);
-          systems = unique (concatMap (lib: lib.systems) providers);
-          master = clpkgs.${makeAttrName asd};
-          circular =
-            filter
-              (lib: elem asd (concatMap (getAttr "asds") lib.lispLibs))
-              (flattenedDeps lispLibs);
-          circularAsds = concatMap (getAttr "asds") circular;
-          circularSystems = concatMap (getAttr "systems") circular;
-          circularLibs = concatMap (getAttr "lispLibs") circular;
-        in
-          if length circular > 0
-          then master.overrideLispAttrs (o: {
-            lispLibs =
-              editTree
-                (unique (lispLibs ++ circularLibs))
-                (filter
-                  (lib:
-                    mutuallyExclusive lib.asds (master.asds ++ circularAsds)));
-            systems = systems ++ circularSystems;
-            asds = master.asds ++ circularAsds;
-          })
-          else master.overrideLispAttrs (o: {
-            # It's possible that 'master' is one of the 'providers'.
-            # Need to ensure that it won't depend on itself, which would create
-            # a circular dependency and crash the Nix interpreter.
-            lispLibs = remove master lispLibs;
-            inherit systems;
-            asds = filter (x: !hasInfix "/" x) systems;
-          });
-      overrides = map combineSlashySubsystems duplicates;
-      overriddenAsds = concatMap (getAttr "asds") overrides;
-      replaceLib = lib:
-        if !mutuallyExclusive lib.asds overriddenAsds
-        # FIXME what if multiple overrides have conflicting asds?
-        then
-          findFirst
-            (override: !mutuallyExclusive override.asds lib.asds)
-            (throw "BUG! Missing override for ${toString lib.asds}")
-            overrides
-        else lib;
-      lispLibs' = editTree libs (map replaceLib);
-    in unique lispLibs';
+    libs;
+    # let
+    #   libsFlat = flattenedDeps libs;
+    #   asdCounts = frequencies (concatMap (getAttr "asds") libsFlat);
+    #   duplicates = attrNames (filterAttrs (n: v: v > 1) asdCounts);
+    #   combineSlashySubsystems = asd:
+    #     let
+    #       providers = filter (lib: elem asd lib.asds) libsFlat;
+    #       lispLibs = unique (concatMap (lib: lib.lispLibs) providers);
+    #       systems = unique (concatMap (lib: lib.systems) providers);
+    #       master = clpkgs.${makeAttrName asd};
+    #       circular =
+    #         filter
+    #           (lib: elem asd (concatMap (getAttr "asds") lib.lispLibs))
+    #           (flattenedDeps lispLibs);
+    #       circularAsds = concatMap (getAttr "asds") circular;
+    #       circularSystems = concatMap (getAttr "systems") circular;
+    #       circularLibs = concatMap (getAttr "lispLibs") circular;
+    #     in
+    #       if length circular > 0
+    #       then master.overrideLispAttrs (o: {
+    #         lispLibs =
+    #           editTree
+    #             (unique (lispLibs ++ circularLibs))
+    #             (filter
+    #               (lib:
+    #                 mutuallyExclusive lib.asds (master.asds ++ circularAsds)));
+    #         systems = systems ++ circularSystems;
+    #         asds = master.asds ++ circularAsds;
+    #       })
+    #       else master.overrideLispAttrs (o: {
+    #         # It's possible that 'master' is one of the 'providers'.
+    #         # Need to ensure that it won't depend on itself, which would create
+    #         # a circular dependency and crash the Nix interpreter.
+    #         lispLibs = remove master lispLibs;
+    #         inherit systems;
+    #         asds = filter (x: !hasInfix "/" x) systems;
+    #       });
+    #   overrides = map combineSlashySubsystems duplicates;
+    #   overriddenAsds = concatMap (getAttr "asds") overrides;
+    #   replaceLib = lib:
+    #     if !mutuallyExclusive lib.asds overriddenAsds
+    #     # FIXME what if multiple overrides have conflicting asds?
+    #     then
+    #       findFirst
+    #         (override: !mutuallyExclusive override.asds lib.asds)
+    #         (throw "BUG! Missing override for ${toString lib.asds}")
+    #         overrides
+    #     else lib;
+    #   lispLibs' = editTree libs (map replaceLib);
+    # in unique lispLibs';
 
   # The recent version of makeWrapper causes breakage. For more info see
   # https://github.com/Uthar/nix-cl/issues/2
@@ -539,30 +541,31 @@ let
   # packages - as argument and returns the list of packages to be
   # installed
   lispWithPackagesInternal = clpkgs: packages:
-    # FIXME just use flattenedDeps instead
-    (build-asdf-system rec {
-      lisp = (head (lib.attrValues clpkgs)).lisp;
-      # See dontUnpack in build-asdf-system
-      src = null;
-      pname = baseNameOf (head (split " " lisp));
-      version = "with-packages";
-      lispLibs = fixDuplicateAsds (packages clpkgs) clpkgs;
-      nativeBuildInputs = [ oldMakeWrapper ];
-      systems = [];
-    }).overrideAttrs(o: {
-      installPhase = ''
-        mkdir -pv $out/bin
-        makeWrapper \
-          ${head (split " " o.lisp)} \
-          $out/bin/${baseNameOf (head (split " " o.lisp))} \
-          --prefix CL_SOURCE_REGISTRY : "${o.CL_SOURCE_REGISTRY}" \
-          --prefix ASDF_OUTPUT_TRANSLATIONS : ${concatStringsSep "::" (flattenedDeps o.lispLibs)}: \
-          --prefix LD_LIBRARY_PATH : "${o.LD_LIBRARY_PATH}" \
-          --prefix LD_LIBRARY_PATH : "${makeLibraryPath o.nativeLibs}" \
-          --prefix CLASSPATH : "${o.CLASSPATH}" \
-          --prefix CLASSPATH : "${makeSearchPath "share/java/*" o.javaLibs}"
-      '';
-    });
+    packages;
+    # # FIXME just use flattenedDeps instead
+    # (build-asdf-system rec {
+    #   lisp = (head (lib.attrValues clpkgs)).lisp;
+    #   # See dontUnpack in build-asdf-system
+    #   src = null;
+    #   pname = baseNameOf (head (split " " lisp));
+    #   version = "with-packages";
+    #   lispLibs = fixDuplicateAsds (packages clpkgs) clpkgs;
+    #   nativeBuildInputs = [ oldMakeWrapper ];
+    #   systems = [];
+    # }).overrideAttrs(o: {
+    #   installPhase = ''
+    #     mkdir -pv $out/bin
+    #     makeWrapper \
+    #       ${head (split " " o.lisp)} \
+    #       $out/bin/${baseNameOf (head (split " " o.lisp))} \
+    #       --prefix CL_SOURCE_REGISTRY : "${o.CL_SOURCE_REGISTRY}" \
+    #       --prefix ASDF_OUTPUT_TRANSLATIONS : ${concatStringsSep "::" (flattenedDeps o.lispLibs)}: \
+    #       --prefix LD_LIBRARY_PATH : "${o.LD_LIBRARY_PATH}" \
+    #       --prefix LD_LIBRARY_PATH : "${makeLibraryPath o.nativeLibs}" \
+    #       --prefix CLASSPATH : "${o.CLASSPATH}" \
+    #       --prefix CLASSPATH : "${makeSearchPath "share/java/*" o.javaLibs}"
+    #   '';
+    # });
 
   lispWithPackages = lisp:
     let
@@ -574,17 +577,17 @@ let
       # Assumed that manually written packages (in packages.nix) don't need
       # circular fixing.
       packages = commonLispPackagesFor lisp;
-      build-with-fix-duplicate-asds = args:
-        head
-          (fixDuplicateAsds
-            [(build-asdf-system args)]
-            (lispPackagesFor lisp));
+      # build-with-fix-duplicate-asds = args:
+      #   head
+      #     (fixDuplicateAsds
+      #       [(build-asdf-system args)]
+      #       (lispPackagesFor lisp));
       # The Quicklisp imported packages do need that, though, because there;s
       # all kinds of weird stuff there.
       qlPackages = quicklispPackagesFor {
         inherit lisp;
         fixup = fixupFor packages;
-        build = build-with-fix-duplicate-asds;
+        # build = build-with-fix-duplicate-asds;
       };
     in qlPackages // packages;
 

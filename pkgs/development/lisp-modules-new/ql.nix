@@ -145,12 +145,14 @@ let
 
   qlpkgs =
     if builtins.pathExists ./imported.nix
-    then filterAttrs (n: v: all (check: !(check n v)) broken) (import ./imported.nix { inherit pkgs; })
+    # then filterAttrs (n: v: all (check: !(check n v)) broken) (import ./imported.nix { inherit pkgs; })
+    then import ./imported.nix { inherit pkgs; }
     else {};
 
   build = pkg:
     let
-      withLibs = pkg // { lispLibs = map build pkg.lispLibs; };
+      # withLibs = pkg // { lispLibs = map build pkg.lispLibs; };
+      withLibs = pkg // { lispLibs = []; };
       builtPkg = build-asdf-system withLibs;
       withExtras = withLibs //
                    (optionalAttrs
