@@ -2,7 +2,7 @@
   (:use :cl)
   (:import-from :str)
   (:import-from :sqlite)
-  (:import-from :alexandria :read-file-into-string)
+  (:import-from :alexandria :read-file-into-string :compose)
   (:import-from :arrow-macros :->>)
   (:import-from
    :org.lispbuilds.nix/util
@@ -67,7 +67,7 @@ let createAsd = { url, sha256, asd, system }:
       find $out -name \"${asd}.asd\" | while read f; do mv -fv $f $(dirname $f)/${system}.asd || true; done
   '';
 get = builtins.getAttr;
-ql = {")
+")
 
 (defmethod database->nix-expression ((database sqlite-database) outfile)
   (sqlite:with-open-database (db (database-url database))
@@ -157,10 +157,10 @@ ql = {")
        "update fixed_systems set asds = systems where name = 'generic-cl'")
 
       (format f prelude)
-      (dolist (p (sqlite:execute-to-list db "select * from fixed_systems"))
+      (let ((pkgs (sqlite:execute-to-list db "select * from fixed_systems")))
+      (dolist (p pkgs)
         (destructuring-bind (name version asd url sha256 deps systems asds) p
-          (format f "~%  ")
-          (let ((*nix-attrs-depth* 1))
+          (let ((*nix-attrs-depth* 0))
             (format
              f
              "~a = ~a;"
@@ -186,11 +186,8 @@ ql = {")
                                       (coerce (json:parse systems) 'list))))
                 ("lispLibs" (:list
                              ,@(mapcar (lambda (dep)
-                                         `(:funcall
-                                           "get"
-                                           (:string ,(nixify-symbol dep))
-                                           (:symbol "ql")))
+                                         `(:symbol ,dep))
                                        (remove "asdf"
                                                (str:split-omit-nulls #\, deps)
                                                :test #'string=))))))))))
-      (format f "~%}; in ql~%"))))
+      (format f "~% in { inherit ~{~A~%~} ;}~%" (mapcar (compose #'nixify-symbol #'first) pkgs))))))
