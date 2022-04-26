@@ -51,42 +51,6 @@ let
     split
     storeDir;
 
-  frequencies = xs:
-    let
-      getFreq = x: freqs:
-        if hasAttr x freqs
-        then getAttr x freqs
-        else 0;
-      lp = xs: freqs:
-        if builtins.length xs == 0
-        then freqs
-        else
-          let
-            x = toString (head xs);
-          in lp (tail xs) (setAttr freqs x (1 + (getFreq x freqs)));
-    in lp xs {};
-
-  # Return a modified dependency tree, where each lispLibs is the
-  # result of applying f to it
-  editTree = lispLibs: f:
-    let
-      editLib = lib:
-        if length lib.lispLibs == 0
-        then lib
-        else lib.overrideLispAttrs(o: {
-          lispLibs = map editLib (f o.lispLibs);
-        });
-      tmpPkg = build-asdf-system {
-        pname = "__editTree";
-        version = "__editTree";
-        lisp = "__editTree";
-        src = null;
-        systems = [];
-        inherit lispLibs;
-      };
-      fixed = editLib tmpPkg;
-    in fixed.lispLibs;
-
   # Returns a flattened dependency tree without duplicates
   # This is probably causing performance problems...
   flattenedDeps = lispLibs:
@@ -416,7 +380,6 @@ let
     # Uncomment for debugging/development
     # inherit
     #   flattenedDeps
-    #   frequencies
     #   concatMap
     #   attrNames
     #   getAttr
