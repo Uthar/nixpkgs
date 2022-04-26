@@ -340,6 +340,15 @@ let
       pkg = substituteLib qlPkg;
     in pkg // { lispLibs = map substituteLib pkg.lispLibs; };
 
+  # FIXME
+  # (defun nixify-symbol (string)
+  #   (flet ((fix-special-chars (str)
+  #            (replace-regexes '("[+]$" "[+][/]" "[+]" "[.]" "[/]")
+  #                             '("_plus" "_plus/" "_plus_" "_dot_" "_slash_")
+  #                             str)))
+  #     (if (ppcre:scan "^[0-9]" string)
+  #         (str:concat "_" (fix-special-chars string))
+  #         (fix-special-chars string))))
   makeAttrName = str:
     removeSuffix
       "_"
@@ -528,7 +537,7 @@ let
 
   # The recent version of makeWrapper causes breakage. For more info see
   # https://github.com/Uthar/nix-cl/issues/2
-  oldMakeWrapper = (import (builtins.fetchTarball {
+  oldMakeWrapper = (import (pkgs.fetchzip {
     url = "https://github.com/nixos/nixpkgs/archive/37809af15e22cc4b1e3de3a9fad98b612881f6a5.tar.gz";
     sha256 = "0ay907qpvmzr3vhhc6bhwrwz6cdwiadbyxjqlq9wi4f2ldr1id59";
   }) {}).makeWrapper;

@@ -11,6 +11,7 @@
    :org.lispbuilds.nix/nix
    :nix-eval
    :system-master
+   :nixify-symbol
    :make-pname
    :*nix-attrs-depth*)
   (:import-from
@@ -50,8 +51,6 @@
 
 { pkgs, ... }:
 
-with builtins;
-
 # Ensures that every non-slashy `system` exists in a unique .asd file.
 # (Think cl-async-base being declared in cl-async.asd upstream)
 #
@@ -61,13 +60,14 @@ with builtins;
 #
 let createAsd = { url, sha256, asd, system }:
    let
-     src = fetchTarball { inherit url sha256; };
+     src = pkgs.fetchzip { inherit url sha256; };
    in pkgs.runCommand \"source\" {} ''
       mkdir -pv $out
       cp -r ${src}/* $out
       find $out -name \"${asd}.asd\" | while read f; do mv -fv $f $(dirname $f)/${system}.asd || true; done
   '';
-in rec {")
+get = builtins.getAttr;
+ql = {")
 
 (defmethod database->nix-expression ((database sqlite-database) outfile)
   (sqlite:with-open-database (db (database-url database))
@@ -186,8 +186,11 @@ in rec {")
                                       (coerce (json:parse systems) 'list))))
                 ("lispLibs" (:list
                              ,@(mapcar (lambda (dep)
-                                         `(:symbol ,dep))
+                                         `(:funcall
+                                           "get"
+                                           (:string ,(nixify-symbol dep))
+                                           (:symbol "ql")))
                                        (remove "asdf"
                                                (str:split-omit-nulls #\, deps)
                                                :test #'string=))))))))))
-      (format f "~%}~%"))))
+      (format f "~%}; in ql~%"))))

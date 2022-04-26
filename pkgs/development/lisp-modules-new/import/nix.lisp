@@ -9,6 +9,7 @@
    :nix-eval
    :system-master
    :make-pname
+   :nixify-symbol
    :*nix-attrs-depth*))
 
 (in-package org.lispbuilds.nix/nix)
