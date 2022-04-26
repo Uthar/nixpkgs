@@ -8,6 +8,7 @@
   (:export
    :nix-eval
    :system-master
+   :nixify-symbol
    :make-pname
    :*nix-attrs-depth*))
 

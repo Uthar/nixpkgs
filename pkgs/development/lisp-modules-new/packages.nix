@@ -1,4 +1,4 @@
-{ build-asdf-system, fixDuplicateAsds, lisp, quicklispPackagesFor, fixupFor, pkgs, ... }:
+{ build-asdf-system, lisp, quicklispPackagesFor, fixupFor, pkgs, ... }:
 
 let
 
@@ -11,11 +11,7 @@ let
     optionals
   ;
 
-  build-with-fix-duplicate-asds = args:
-    head
-      (fixDuplicateAsds
-        [(build-asdf-system args)]
-        (ql // packages));
+  build-with-fix-duplicate-asds = build-asdf-system;
 
   ql = quicklispPackagesFor { inherit lisp; fixup = fixupFor packages; };
 
