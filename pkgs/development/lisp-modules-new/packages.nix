@@ -9,12 +9,9 @@ let
     setAttr
     hasAttr
     optionals
+    hasSuffix
+    splitString
   ;
-
-  build-with-fix-duplicate-asds = build-asdf-system;
-
-  ql = quicklispPackagesFor { inherit lisp; fixup = fixupFor packages; };
-
 
   # Used by builds that would otherwise attempt to write into storeDir.
   #
@@ -25,7 +22,7 @@ let
   # E.g. cl-unicode creating .txt files during compilation
   build-with-compile-into-pwd = args:
     let
-      build = (build-with-fix-duplicate-asds (args // { version = args.version + "-build"; }))
+      build = (build-asdf-system (args // { version = args.version + "-build"; }))
         .overrideAttrs(o: {
           buildPhase = with builtins; ''
             mkdir __fasls
@@ -41,11 +38,18 @@ let
             cp -r * $out
           '';
         });
-    in build-with-fix-duplicate-asds (args // {
+    in build-asdf-system (args // {
       # Patches are already applied in `build`
       patches = [];
       src = build;
     });
+
+  # A little hacky
+  isJVM = hasSuffix "abcl" (head (splitString " " lisp));
+
+  # Makes it so packages imported from Quicklisp can be re-used as
+  # lispLibs ofpackages in this file.
+  ql = quicklispPackagesFor { inherit lisp; fixup = fixupFor packages; };
 
   packages = rec {
 
@@ -59,10 +63,9 @@ let
     systems = [ "asdf" "uiop" ];
   };
 
-  uiop = build-with-compile-into-pwd {
-    inherit (asdf) version src systems;
+  uiop = asdf.overrideLispAttrs(o: {
     pname = "uiop";
-  };
+  });
 
   cffi = let
     jna = pkgs.fetchMavenArtifact {
@@ -71,7 +74,7 @@ let
       version = "5.9.0";
       sha256 = "0qbis8acv04fi902qzak1mbagqaxcsv2zyp7b8y4shs5nj0cgz7a";
     };
-  in build-with-fix-duplicate-asds {
+  in build-asdf-system {
     src =  builtins.fetchTarball {
       url = "http://beta.quicklisp.org/archive/cffi/2021-04-11/cffi_0.24.1.tgz";
       sha256 = "17ryim4xilb1rzxydfr7595dnhqkk02lmrbkqrkvi9091shi4cj3";
@@ -83,16 +86,15 @@ let
       babel
       trivial-features
     ];
-    javaLibs = [ jna ];
+    javaLibs = optionals isJVM [ jna ];
   };
 
-  cffi-libffi = build-asdf-system {
-    inherit (ql.cffi-libffi) pname version asds lispLibs nativeLibs nativeBuildInputs;
+  cffi-libffi = ql.cffi-libffi.overrideLispAttrs (o: {
     src = builtins.fetchTarball {
       url = "https://github.com/cffi/cffi/archive/3f842b92ef808900bf20dae92c2d74232c2f6d3a.tar.gz";
       sha256 = "1jilvmbbfrmb23j07lwmkbffc6r35wnvas5s4zjc84i856ccclm2";
     };
-  };
+  });
 
   cl-unicode = build-with-compile-into-pwd {
     pname = "cl-unicode";
@@ -108,7 +110,7 @@ let
     ];
   };
 
-  quri = build-with-fix-duplicate-asds {
+  quri = build-asdf-system {
     src = pkgs.stdenv.mkDerivation {
       pname = "patched";
       version = "source";
@@ -136,7 +138,7 @@ let
     ];
   };
 
-  jzon = build-with-fix-duplicate-asds {
+  jzon = build-asdf-system {
     src = builtins.fetchTarball {
       url = "https://github.com/Zulu-Inuoe/jzon/archive/6b201d4208ac3f9721c461105b282c94139bed29.tar.gz";
       sha256 = "01d4a78pjb1amx5amdb966qwwk9vblysm1li94n3g26mxy5zc2k3";
@@ -149,7 +151,7 @@ let
     systems = [ "com.inuoe.jzon" ];
   };
 
-  cl-notify = build-with-fix-duplicate-asds {
+  cl-notify = build-asdf-system {
     pname = "cl-notify";
     version = "20080904-138ca7038";
     src = builtins.fetchTarball {
@@ -233,7 +235,7 @@ let
     nativeLibs = [ pkgs.fuse ];
   };
 
-  cl-containers = build-with-fix-duplicate-asds {
+  cl-containers = build-asdf-system {
     inherit (ql.cl-containers) pname version src;
     lispLibs = ql.cl-containers.lispLibs ++ [ ql.moptilities ];
     systems = [ "cl-containers" "cl-containers/with-moptilities" ];
@@ -247,7 +249,7 @@ let
     '';
   };
 
-  clx-truetype = build-with-fix-duplicate-asds {
+  clx-truetype = build-asdf-system {
     pname = "clx-truetype";
     version = "20160825-git";
     src = builtins.fetchTarball {
@@ -260,7 +262,7 @@ let
     ];
   };
 
-  mgl = build-with-fix-duplicate-asds {
+  mgl = build-asdf-system {
     pname = "mgl";
     version = "2021-10-07";
     src = builtins.fetchTarball {
@@ -274,7 +276,7 @@ let
     systems = [ "mgl" "mgl/test" ];
   };
 
-  mgl-mat = build-with-fix-duplicate-asds {
+  mgl-mat = build-asdf-system {
     pname = "mgl-mat";
     version = "2021-10-11";
     src = builtins.fetchTarball {
@@ -294,7 +296,7 @@ let
     lispLibs = ql.mathkit.lispLibs ++ [ ql.sb-cga ];
   };
 
-  nyxt-gtk = build-with-fix-duplicate-asds {
+  nyxt-gtk = build-asdf-system {
     inherit (ql.nyxt) pname lisp;
     version = "2.2.4";
 
@@ -340,6 +342,8 @@ let
     '';
   };
 
+  nyxt = nyxt-gtk;
+
   ltk = ql.ltk.overrideLispAttrs (o: {
     src = builtins.fetchTarball {
       url = "https://github.com/uthar/ltk/archive/f19162e76d6c7c2f51bd289b811d9ba20dd6555e.tar.gz";
@@ -348,21 +352,17 @@ let
     version = "f19162e76";
   });
 
-  nyxt = nyxt-gtk;
-
-  s-sql_slash_tests = build-with-fix-duplicate-asds {
-    inherit (ql.s-sql_slash_tests) pname version src systems asds;
-    lispLibs = ql.s-sql_slash_tests.lispLibs ++ [
+  s-sql_slash_tests = ql.s-sql_slash_tests.overrideLispAttrs (o: {
+    lispLibs = o.lispLibs ++ [
       ql.cl-postgres_slash_tests
     ];
-  };
+  });
 
-  simple-date_slash_postgres-glue = build-with-fix-duplicate-asds {
-    inherit (ql.simple-date_slash_postgres-glue) pname version src systems asds;
-    lispLibs = ql.simple-date_slash_postgres-glue.lispLibs ++ [
+  simple-date_slash_postgres-glue = ql.simple-date_slash_postgres-glue.overrideLispAttrs (o: {
+    lispLibs = o.lispLibs ++ [
       ql.cl-postgres_slash_tests
     ];
-  };
+  });
 
   };
 
