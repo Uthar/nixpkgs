@@ -1,4 +1,4 @@
-{ pkgs, build-asdf-system, fixup ? pkgs.lib.id, ... }:
+{ pkgs, build-asdf-system, fixup ? pkgs.lib.id, stdenv, ... }:
 
 with pkgs;
 with lib;
@@ -17,6 +17,9 @@ let
       nativeLibs = [ glib ];
     };
     cl-cffi-gtk-cairo = pkg: {
+      nativeLibs = [ cairo ];
+    };
+    cl-cairo2 = pkg: {
       nativeLibs = [ cairo ];
     };
     cl-cffi-gtk-gdk = pkg: {
@@ -127,11 +130,29 @@ let
       nativeLibs = [ libfixposix ];
       systems = [ "iolib" "iolib/os" "iolib/pathnames" ];
     };
+    "cl-ana.hdf-cffi" = pkg: {
+      nativeBuildInputs = [ hdf5 ];
+      nativeLibs = [ hdf5 ];
+      NIX_LDFLAGS = [ "-lhdf5" ];
+    };
+    gsll = pkg: {
+      nativeBuildInputs = [ gsl ];
+      nativeLibs = [ gsl ];
+    };
+    cl-libyaml = pkg: {
+      nativeLibs = [ libyaml ];
+    };
+    cl-libxml2 = pkg: {
+      nativeLibs = [ libxml2 ];
+    };
+    cl-readline = pkg: {
+      nativeLibs = [ readline ];
+    };
   };
 
   qlpkgs =
     if builtins.pathExists ./imported.nix
-    then import ./imported.nix { inherit (pkgs) runCommand fetchzip; pkgs = builtQlpkgs; }
+    then import ./imported.nix { inherit (pkgs) runCommand fetchzip; inherit stdenv; pkgs = builtQlpkgs; }
     else {};
 
   builtQlpkgs = mapAttrs (n: v: build v) qlpkgs;

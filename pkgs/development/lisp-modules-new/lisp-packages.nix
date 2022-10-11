@@ -305,6 +305,7 @@ let
       });
     in import ./ql.nix {
       inherit pkgs;
+      inherit stdenv;
       inherit fixup;
       build-asdf-system = build-asdf-system';
     };
@@ -400,7 +401,7 @@ let
     # The problem was that with --load everywhere, some
     # implementations didn't exit with 0 on compilation failure
     # Maybe a handler-case in buildScript?
-    sbcl  = "${pkgs.sbcl}/bin/sbcl --script";
+    sbcl  = "${pkgs.sbcl}/bin/sbcl --dynamic-space-size 3072 --script";
     ecl   = "${pkgs.ecl}/bin/ecl --shell";
     abcl  = ''${pkgs.abcl}/bin/abcl --batch --eval "(load \"$buildScript\")"'';
     ccl   = ''${pkgs.ccl}/bin/ccl --batch --eval "(load \"$buildScript\")" --'';
