@@ -110,6 +110,12 @@ let
     sdl2 = super.sdl2.overrideLispAttrs (o: {
       nativeLibs = [ pkgs.SDL2 ];
     });
+    sdl2-ttf = super.sdl2-ttf.overrideLispAttrs (o: {
+      nativeLibs = [ pkgs.SDL2_ttf ];
+    });
+    sdl2-image = super.sdl2-image.overrideLispAttrs (o: {
+      nativeLibs = [ pkgs.SDL2_image ];
+    });
     lispbuilder-sdl-cffi = super.lispbuilder-sdl-cffi.overrideLispAttrs (o: {
       nativeLibs = [ pkgs.SDL ];
     });
