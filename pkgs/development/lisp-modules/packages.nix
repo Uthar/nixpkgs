@@ -859,6 +859,116 @@ let
     ];
   };
 
+  micros = build-asdf-system rec {
+    pname = "micros";
+    version = "0.0.0";
+    src = pkgs.fetchFromGitHub {
+      owner = "lem-project";
+      repo = "micros";
+      rev = "ed264a27262baeed493cdde338873bf4afc3721c";
+      sha256 = "sha256-lg40KhrDY+oi1pU3h9iTtmj90kqWEhb5sO/eVDEEFmM=";
+    };
+    patches = [ ./patches/lem-micros-no-ql.patch ];
+  };
+
+  lem-base = build-asdf-system rec {
+    pname = "lem-base";
+    version = "2.1.0";
+    src = pkgs.fetchFromGitHub {
+      owner = "lem-project";
+      repo = "lem";
+      rev = "v${version}";
+      sha256 = "sha256-YKJyFed6aUvr1bogNWnoeiFHfg0v7KLxlnoGO8Y3Va4=";
+    };
+    lispLibs = [
+      super.iterate
+      super.alexandria
+      super.cl-ppcre
+      super.babel
+      super.log4cl
+      super.closer-mop
+      super.trivia
+    ];
+  };
+
+  lem-mailbox = build-asdf-system rec {
+    pname = "lem-mailbox";
+    version = "tip";
+    src = pkgs.fetchFromGitHub {
+      owner = "lem-project";
+      repo = "lem-mailbox";
+      rev = "df718abd72fe5d41c4b168ac254f821226adb4b0";
+      sha256 = "sha256-C3GOZGoX5z/V5RaPNzFQC9z1y8ZfLQA3i73z991F2Gw=";
+    };
+    lispLibs = [
+      super.bordeaux-threads
+      super.bt-semaphore
+      super.queues
+      super.queues_dot_simple-cqueue
+    ];
+  };
+
+  lem-encodings = build-asdf-system rec {
+    pname = "lem-encodings";
+    version = "2.1.0";
+    src = pkgs.fetchFromGitHub {
+      owner = "lem-project";
+      repo = "lem";
+      rev = "v${version}";
+      sha256 = "sha256-YKJyFed6aUvr1bogNWnoeiFHfg0v7KLxlnoGO8Y3Va4=";
+    };
+    lispLibs = [ self.lem-base ];
+  };
+
+  lem = build-asdf-system rec {
+    pname = "lem";
+    version = "2.1.0";
+    src = pkgs.fetchFromGitHub {
+      owner = "lem-project";
+      repo = "lem";
+      rev = "v${version}";
+      sha256 = "sha256-YKJyFed6aUvr1bogNWnoeiFHfg0v7KLxlnoGO8Y3Va4=";
+    };
+    patches = [ ./patches/lem-no-ql.patch ./patches/lem-no-ext.patch ];
+    lispLibs = (with super; [
+      alexandria
+      trivial-gray-streams
+      trivial-types
+      cl-ppcre
+      inquisitor
+      babel
+      bordeaux-threads
+      yason
+      log4cl
+      split-sequence
+      str
+      dexador
+    ]) ++ (with self; [
+      micros
+      lem-base
+      lem-encodings
+      lem-mailbox
+    ]);
+    systems = [ "lem" "lem/extensions" ];
+  };
+
+  lem-ncurses = build-asdf-system rec {
+    pname = "lem-ncurses";
+    version = "2.1.0";
+    src = pkgs.fetchFromGitHub {
+      owner = "lem-project";
+      repo = "lem";
+      rev = "v${version}";
+      sha256 = "sha256-YKJyFed6aUvr1bogNWnoeiFHfg0v7KLxlnoGO8Y3Va4=";
+    };
+    lispLibs = [
+      self.cffi
+      super.cl-charms
+      super.cl-setlocale
+      self.lem
+    ];
+  };
+
   });
 
 in packages

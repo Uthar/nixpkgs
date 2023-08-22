@@ -223,7 +223,10 @@ let
       lispLibs = o.lispLibs ++ [
         self.mcclim
       ];
-});
+    });
+    cl-charms = super.cl-charms.overrideLispAttrs (o: {
+      nativeLibs = [ pkgs.ncurses ];
+    });
   });
 
   qlpkgs =

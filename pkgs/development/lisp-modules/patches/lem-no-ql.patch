@@ -1,0 +1,14 @@
+diff -u --label /nix/store/8f87spmw4pbi40cvlnh788p4zny6mibg-source/src/lem.lisp --label \#\<buffer\ lem.lisp\> /nix/store/8f87spmw4pbi40cvlnh788p4zny6mibg-source/src/lem.lisp /tmp/buffer-content-Hft4fI
+--- a/src/lem.lisp
++++ b/src/lem.lisp
+@@ -232,7 +232,7 @@
+         (t
+          (let ((implementation (get-default-implementation :errorp nil)))
+            (unless implementation
+-             (ql:quickload :lem-ncurses)
++             (asdf:load-system 'lem-ncurses)
+              (setf implementation (get-default-implementation)))
+            (invoke-frontend
+             (lambda (&optional initialize finalize)
+
+Diff finished.  Tue Aug 22 13:35:14 2023

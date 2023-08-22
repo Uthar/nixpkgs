@@ -1,0 +1,15 @@
+diff -u --label /nix/store/w524gkkzshzbxjg2ijbnnr7gi4vfw1nh-source/lsp-api.lisp --label \#\<buffer\ lsp-api.lisp\> /nix/store/w524gkkzshzbxjg2ijbnnr7gi4vfw1nh-source/lsp-api.lisp /tmp/buffer-content-cMurym
+--- a/lsp-api.lisp
++++ b/lsp-api.lisp
+@@ -204,7 +204,8 @@
+ 
+ ;;;
+ (defun load-systems (system-names)
+-  (ql:quickload system-names))
++  (dolist (name system-names)
++    (asdf:load-system name)))
+ 
+ (defun compile-and-load-file (filename)
+   (uiop:with-temporary-file (:pathname output-file :type "fasl")
+
+Diff finished.  Tue Aug 22 13:24:41 2023
