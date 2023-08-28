@@ -1,4 +1,4 @@
-{ lib, javaPackages, fetchFromGitHub, makeDesktopItem, copyDesktopItems, makeWrapper
+{ lib, fetchFromGitHub, makeDesktopItem, copyDesktopItems, makeWrapper
 , jre, maven
 }:
 
@@ -27,7 +27,7 @@ let
   # Also use the commit date as a build and output timestamp.
   mvnParameters = "-Pno-git-rev -Dgit.commit.id.describe=${version} -Dproject.build.outputTimestamp=${buildDate} -DbuildTimestamp=${buildDate}";
 in
-javaPackages.mavenfod rec {
+maven.buildMavenPackage rec {
   pname = "digital";
   inherit version jre;
 
@@ -39,9 +39,9 @@ javaPackages.mavenfod rec {
   };
 
   inherit mvnParameters;
-  mvnHash = "sha256-Ej/JePvd9Ieni8FqSaXBDc2T6Cwr8WP54iko8wYiT68=";
+  mvnHash = "sha256-wm/axWJucoW9P98dKqHI4bjrUnmBTfosCOdJg9VBJ+4=";
 
-  nativeBuildInputs = [ copyDesktopItems maven makeWrapper ];
+  nativeBuildInputs = [ copyDesktopItems makeWrapper ];
 
   installPhase = ''
     mkdir -p $out/bin

@@ -7,21 +7,21 @@
 
 let
   pname = "osu-lazer-bin";
-  version = "2023.617.0";
+  version = "2023.815.0";
   name = "${pname}-${version}";
 
   osu-lazer-bin-src = {
     aarch64-darwin = {
       url = "https://github.com/ppy/osu/releases/download/${version}/osu.app.Apple.Silicon.zip";
-      sha256 = "sha256-aO1yd2ha0/Adfm2GDg5atRCucPNZahxXW1Nb6tgnby0=";
+      sha256 = "sha256-lijX8UOSWZPzQdA+DOPcgKW3PxKFbNtBSUrq903zx7E=";
     };
     x86_64-darwin = {
       url = "https://github.com/ppy/osu/releases/download/${version}/osu.app.Intel.zip";
-      sha256 = "sha256-lGNcIS3QVrlur2z5cpoAxKK2a3KED9mWjtiCYycosQM=";
+      sha256 = "sha256-XuQ82h/ebo7oWcWq4vUOguh6FUsWO+xFpz7Z++DjkzY=";
     };
     x86_64-linux = {
       url = "https://github.com/ppy/osu/releases/download/${version}/osu.AppImage";
-      sha256 = "sha256-g/jBY7L06PrIHQ/2W52Itr+BkKIXEaYIHzyVMZHcrkk=";
+      sha256 = "sha256-wRWJQQ4rn3A8Dd53gPt62pOtd9KRmYXxuejd8RGOAdw=";
     };
   }.${stdenv.system} or (throw "${pname}-${version}: ${stdenv.system} is unsupported.");
 

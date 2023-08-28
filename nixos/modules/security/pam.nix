@@ -548,6 +548,9 @@ let
           (let yubi = config.security.pam.yubico; in optionalString cfg.yubicoAuth ''
             auth ${yubi.control} ${pkgs.yubico-pam}/lib/security/pam_yubico.so mode=${toString yubi.mode} ${optionalString (yubi.challengeResponsePath != null) "chalresp_path=${yubi.challengeResponsePath}"} ${optionalString (yubi.mode == "client") "id=${toString yubi.id}"} ${optionalString yubi.debug "debug"}
           '') +
+          (let dp9ik = config.security.pam.dp9ik; in optionalString dp9ik.enable ''
+            auth ${dp9ik.control} ${pkgs.pam_dp9ik}/lib/security/pam_p9.so ${dp9ik.authserver}
+          '') +
           optionalString cfg.fprintAuth ''
             auth sufficient ${pkgs.fprintd}/lib/security/pam_fprintd.so
           '' +
@@ -694,7 +697,7 @@ let
             session required ${config.systemd.package}/lib/security/pam_systemd_home.so
           '' +
           optionalString cfg.makeHomeDir ''
-            session required ${pkgs.pam}/lib/security/pam_mkhomedir.so silent skel=${config.security.pam.makeHomeDir.skelDirectory} umask=0077
+            session required ${pkgs.pam}/lib/security/pam_mkhomedir.so silent skel=${config.security.pam.makeHomeDir.skelDirectory} umask=${config.security.pam.makeHomeDir.umask}
           '' +
           optionalString cfg.updateWtmp ''
             session required ${pkgs.pam}/lib/security/pam_lastlog.so silent
@@ -899,6 +902,16 @@ in
       '';
     };
 
+    security.pam.makeHomeDir.umask = mkOption {
+      type = types.str;
+      default = "0077";
+      example = "0022";
+      description = lib.mdDoc ''
+        The user file mode creation mask to use on home directories
+        newly created by `pam_mkhomedir`.
+      '';
+    };
+
     security.pam.enableSSHAgentAuth = mkOption {
       type = types.bool;
       default = false;
@@ -912,6 +925,32 @@ in
     };
 
     security.pam.enableOTPW = mkEnableOption (lib.mdDoc "the OTPW (one-time password) PAM module");
+
+    security.pam.dp9ik = {
+      enable = mkEnableOption (
+        lib.mdDoc ''
+          the dp9ik pam module provided by tlsclient.
+
+          If set, users can be authenticated against the 9front
+          authentication server given in {option}`security.pam.dp9ik.authserver`.
+        ''
+      );
+      control = mkOption {
+        default = "sufficient";
+        type = types.str;
+        description = lib.mdDoc ''
+          This option sets the pam "control" used for this module.
+        '';
+      };
+      authserver = mkOption {
+        default = null;
+        type = with types; nullOr str;
+        description = lib.mdDoc ''
+          This controls the hostname for the 9front authentication server
+          that users will be authenticated against.
+        '';
+      };
+    };
 
     security.pam.krb5 = {
       enable = mkOption {

@@ -4,20 +4,21 @@
 , makeWrapper
 , python3
 , which
+, stdenv
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "erg";
-  version = "0.6.13";
+  version = "0.6.19";
 
   src = fetchFromGitHub {
     owner = "erg-lang";
     repo = "erg";
     rev = "v${version}";
-    hash = "sha256-XwQKtorE1HGRRCCtxQBVbl6O6aTs5Z2/W9n2Am40e8Q=";
+    hash = "sha256-oA0AXTMEdfItvIZi1ITQ3ZR6JPSg9/1V6oeK2wcRERw=";
   };
 
-  cargoHash = "sha256-I4hQ78RTkCDKpq7HBNJsKqCiFL9004XvWdwtRdTQQkE=";
+  cargoHash = "sha256-dLMU48/umKHPV6iahazxOYA/eDvFWhzV9xveT2xQ+EE=";
 
   nativeBuildInputs = [
     makeWrapper
@@ -29,6 +30,7 @@ rustPlatform.buildRustPackage rec {
 
   env = {
     BUILD_DATE = "1970/01/01 00:00:00";
+    CASE_SENSITIVE = lib.boolToString (!stdenv.isDarwin);
     GIT_HASH_SHORT = src.rev;
   };
 

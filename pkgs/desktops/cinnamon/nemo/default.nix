@@ -23,13 +23,13 @@
 
 stdenv.mkDerivation rec {
   pname = "nemo";
-  version = "5.8.2";
+  version = "5.8.4";
 
   src = fetchFromGitHub {
     owner = "linuxmint";
     repo = pname;
     rev = version;
-    sha256 = "sha256-Be67TOA1gLwSYx8y2iyfvY0QCpWOFutpXMDaPiTRQGg=";
+    sha256 = "sha256-WjgQXQe8iCzkc4pmeTIx6mSlsg88xy3FTPMokJWo3fg=";
   };
 
   patches = [
@@ -49,7 +49,6 @@ stdenv.mkDerivation rec {
     libexif
     exempi
     gvfs
-    gobject-introspection
     libgsf
   ];
 
@@ -60,6 +59,7 @@ stdenv.mkDerivation rec {
     wrapGAppsHook
     intltool
     shared-mime-info
+    gobject-introspection
   ];
 
   mesonFlags = [

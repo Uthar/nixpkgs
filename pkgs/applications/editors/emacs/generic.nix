@@ -3,6 +3,7 @@
 , variant
 , src
 , patches ? _: [ ]
+, meta
 }:
 
 { lib
@@ -58,19 +59,6 @@
 , webkitgtk
 , wrapGAppsHook
 
-# macOS dependencies for NS and macPort
-, AppKit
-, Carbon
-, Cocoa
-, GSS
-, IOKit
-, ImageCaptureCore
-, ImageIO
-, OSAKit
-, Quartz
-, QuartzCore
-, WebKit
-
 # Boolean flags
 , nativeComp ? null
 , withNativeCompilation ?
@@ -86,6 +74,7 @@
 , withGTK2 ? false
 , withGTK3 ? withPgtk && !noGui
 , withGconf ? false
+, withGlibNetworking ? withPgtk || withGTK3 || (withX && withXwidgets)
 , withGpm ? stdenv.isLinux
 , withImageMagick ? lib.versionOlder version "27" && (withX || withNS)
 , withMotif ? false
@@ -108,6 +97,19 @@
   else if withMotif then "motif"
   else if withAthena then "athena"
   else "lucid")
+
+# macOS dependencies for NS and macPort
+, AppKit
+, Carbon
+, Cocoa
+, GSS
+, IOKit
+, ImageCaptureCore
+, ImageIO
+, OSAKit
+, Quartz
+, QuartzCore
+, WebKit
 }:
 
 assert (withGTK2 && !withNS && variant != "macport") -> withX;
@@ -243,7 +245,7 @@ mkDerivation (finalAttrs: (lib.optionalAttrs withNativeCompilation {
     gtk3-x11
   ] ++ lib.optionals (withX && withMotif) [
     motif
-  ] ++ lib.optionals (withX && withXwidgets) [
+  ] ++ lib.optionals withGlibNetworking [
     glib-networking
   ] ++ lib.optionals withNativeCompilation [
     libgccjit
@@ -391,44 +393,7 @@ mkDerivation (finalAttrs: (lib.optionalAttrs withNativeCompilation {
     treeSitter = builtins.trace "emacs.passthru: treeSitter was renamed to withTreeSitter and will be removed in 23.11" withTreeSitter;
   };
 
-  meta = {
-    homepage = if variant == "macport"
-               then "https://bitbucket.org/mituharu/emacs-mac/"
-               else "https://www.gnu.org/software/emacs/";
-    description = "The extensible, customizable GNU text editor"
-                  + lib.optionalString (variant == "macport") " - with macport patches";
-    longDescription = ''
-      GNU Emacs is an extensible, customizable text editor—and more. At its
-      core is an interpreter for Emacs Lisp, a dialect of the Lisp programming
-      language with extensions to support text editing.
-
-      The features of GNU Emacs include: content-sensitive editing modes,
-      including syntax coloring, for a wide variety of file types including
-      plain text, source code, and HTML; complete built-in documentation,
-      including a tutorial for new users; full Unicode support for nearly all
-      human languages and their scripts; highly customizable, using Emacs Lisp
-      code or a graphical interface; a large number of extensions that add other
-      functionality, including a project planner, mail and news reader, debugger
-      interface, calendar, and more. Many of these extensions are distributed
-      with GNU Emacs; others are available separately.
-    ''
-    + lib.optionalString (variant == "macport") ''
-
-      This release is built from Mitsuharu Yamamoto's patched, MacOS X-specific
-      source code.
-    '';
-    license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [
-      AndersonTorres
-      adisbladis
-      atemu
-      jwiegley
-      lovek323
-      matthewbauer
-    ];
-    platforms = if variant == "macport"
-                then lib.platforms.darwin
-                else lib.platforms.all;
+  meta = meta // {
     broken = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
   };
 }))

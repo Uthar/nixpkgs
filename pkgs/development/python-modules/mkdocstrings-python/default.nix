@@ -11,16 +11,16 @@
 
 buildPythonPackage rec {
   pname = "mkdocstrings-python";
-  version = "0.10.1";
+  version = "1.5.2";
   format = "pyproject";
 
-  disabled = pythonOlder "3.7";
+  disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
     owner = "mkdocstrings";
     repo = "python";
-    rev = version;
-    hash = "sha256-VGPlOHQNtXrfmcne93xDIxN20KDGlTQrjeAKhX/L6K0=";
+    rev = "refs/tags/${version}";
+    hash = "sha256-jfwyIx43s/zmIVOTDSIiQ8EYHUEHwRTwEa2SAfWy7HM=";
   };
 
   nativeBuildInputs = [
@@ -36,11 +36,6 @@ buildPythonPackage rec {
     mkdocs-material
     pytestCheckHook
   ];
-
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace 'license = "ISC"' 'license = {text = "ISC"}' \
-  '';
 
   pythonImportsCheck = [
     "mkdocstrings_handlers"

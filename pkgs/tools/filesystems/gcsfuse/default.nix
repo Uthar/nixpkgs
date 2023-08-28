@@ -5,13 +5,13 @@
 
 buildGoModule rec {
   pname = "gcsfuse";
-  version = "0.42.5";
+  version = "1.0.1";
 
   src = fetchFromGitHub {
     owner = "googlecloudplatform";
     repo = "gcsfuse";
     rev = "v${version}";
-    hash = "sha256-ME0xoi1KEzw99GmKQeeNHVjIH3UlBnP6/b50xJcPA/I=";
+    hash = "sha256-9RqvEETRwcyK59AIWRgT3YNMu9MYZGD9rr5vyzTn0xg=";
   };
 
   vendorHash = "sha256-oTELdPPkKBQFBIRhjns6t3wj84RQhDVOi95seNyeeR0=";

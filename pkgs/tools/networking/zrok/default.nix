@@ -1,4 +1,4 @@
-{ stdenv, lib, fetchzip, patchelf }:
+{ lib, stdenv, fetchzip }:
 
 let
   inherit (stdenv.hostPlatform) system;
@@ -11,14 +11,14 @@ let
   }.${system} or throwSystem;
 
   sha256 = {
-    x86_64-linux = "sha256-gcmgpvfk7bciTmotTHObvZvLPdLudAR2vQneLKN+uE4=";
-    aarch64-linux = "sha256-cZDekIW2Z7hfIY6Y4xhsmgvMLnKYo6H9BAMg9/I5a10=";
-    armv7l-linux = "sha256-Fn2e1ywuTUt58geT4hNb3YEZiJDE6TUKaKI/xpsG69c=";
+    x86_64-linux = "sha256-sHQD8uN8Pm/LnayW1XdWXJ90gN4cCE4sGd+Or4TlhP8=";
+    aarch64-linux = "sha256-VJaVC+sfqdT0BnV1v8MjzftemP4Iuln1wy3BaCTbeYA=";
+    armv7l-linux = "sha256-7v9u7OtUbtnzvlTBvO5zuIuTgNqualxYsrv97TZGa9U=";
   }.${system} or throwSystem;
 in
 stdenv.mkDerivation rec {
   pname = "zrok";
-  version = "0.3.6";
+  version = "0.4.2";
 
   src = fetchzip {
     url = "https://github.com/openziti/zrok/releases/download/v${version}/zrok_${version}_${plat}.tar.gz";
@@ -43,7 +43,7 @@ stdenv.mkDerivation rec {
     maintainers = [ lib.maintainers.bandresen ];
     platforms = [ "x86_64-linux" "aarch64-linux" "armv7l-linux" ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.apsl20;
+    license = lib.licenses.asl20;
   };
 
 }

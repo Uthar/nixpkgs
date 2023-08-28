@@ -21,13 +21,13 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "oculante";
-  version = "0.6.65";
+  version = "0.7.3";
 
   src = fetchFromGitHub {
     owner = "woelper";
     repo = pname;
     rev = version;
-    hash = "sha256-99wA8BELw/FsiwGtWmbZedANjHamK1IHnl4wHwPAGIE=";
+    hash = "sha256-Q4YEBEA+Kt09Se9b03EZ6phm+6Q3fAxXCZRXQeqPA2k=";
   };
 
   cargoLock = {

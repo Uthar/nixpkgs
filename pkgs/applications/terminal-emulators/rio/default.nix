@@ -1,15 +1,18 @@
 { lib
 , fetchFromGitHub
 , rustPlatform
-, gitUpdater
+, nixosTests
+, nix-update-script
 
 , autoPatchelfHook
+, ncurses
 , pkg-config
 
 , gcc-unwrapped
 , fontconfig
 , libGL
 , vulkan-loader
+, libxkbcommon
 
 , withX11 ? true
 , libX11
@@ -18,7 +21,7 @@
 , libXrandr
 , libxcb
 
-, withWayland ? false
+, withWayland ? true
 , wayland
 }:
 let
@@ -26,32 +29,34 @@ let
     (lib.getLib gcc-unwrapped)
     fontconfig
     libGL
+    libxkbcommon
     vulkan-loader
-  ] ++ lib.optional withX11 [
+  ] ++ lib.optionals withX11 [
     libX11
     libXcursor
     libXi
     libXrandr
     libxcb
-  ] ++ lib.optional withWayland [
+  ] ++ lib.optionals withWayland [
     wayland
   ];
 in
 rustPlatform.buildRustPackage rec {
   pname = "rio";
-  version = "0.0.6.1-unstable-2023-06-18";
+  version = "0.0.16";
 
   src = fetchFromGitHub {
     owner = "raphamorim";
     repo = "rio";
-    rev = "f3fbe7a020528d2f5ed8beaa3afd900a4c2e83a2";
-    hash = "sha256-emZqD/vvQHk43E8gTHVczCOni110sCRLMWp9igruYc8=";
+    rev = "v${version}";
+    hash = "sha256-jyfobmwDCsvhpKcAD0ivxfRENaTVjjauRBMDNPgvjVY=";
   };
 
-  cargoHash = "sha256-1ZQae5IHA+8HwyYGFBy1XPEYR8NAHHrU1JNOMT7T5zA=";
+  cargoHash = "sha256-efMw07KH8Nic76MWTyf16Gg/8PyM9gZKSNs5cuIKBJQ=";
 
   nativeBuildInputs = [
     autoPatchelfHook
+    ncurses
     pkg-config
   ];
 
@@ -59,17 +64,32 @@ rustPlatform.buildRustPackage rec {
 
   buildInputs = rlinkLibs;
 
+  outputs = [ "out" "terminfo" ];
+
   buildNoDefaultFeatures = true;
   buildFeatures = [
     (lib.optionalString withX11 "x11")
     (lib.optionalString withWayland "wayland")
   ];
 
+  checkFlags = [
+    # Fail to run in sandbox environment.
+    "--skip=screen::context::test"
+  ];
+
+  postInstall = ''
+    install -dm 755 "$terminfo/share/terminfo/r/"
+    tic -xe rio,rio-direct -o "$terminfo/share/terminfo" misc/rio.terminfo
+    mkdir -p $out/nix-support
+    echo "$terminfo" >> $out/nix-support/propagated-user-env-packages
+  '';
+
   passthru = {
-    updateScript = gitUpdater {
-      rev-prefix = "v";
-      ignoredVersions = ".(rc|beta).*";
+    updateScript = nix-update-script {
+      extraArgs = [ "--version-regex" "v([0-9.]+)" ];
     };
+
+    tests.test = nixosTests.terminal-emulators.rio;
   };
 
   meta = {

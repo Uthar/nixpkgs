@@ -56,8 +56,6 @@ let
 
     awa = callPackage ../development/ocaml-modules/awa { mtime = mtime_1; };
 
-    awa-lwt = callPackage ../development/ocaml-modules/awa/lwt.nix { mtime = mtime_1; };
-
     awa-mirage = callPackage ../development/ocaml-modules/awa/mirage.nix { mtime = mtime_1; };
 
     ### B ###
@@ -344,6 +342,8 @@ let
     dolog = callPackage ../development/ocaml-modules/dolog { };
 
     domain-local-await = callPackage ../development/ocaml-modules/domain-local-await { };
+
+    domain-local-timeout = callPackage ../development/ocaml-modules/domain-local-timeout { };
 
     domain-name = callPackage ../development/ocaml-modules/domain-name { };
 
@@ -799,6 +799,8 @@ let
 
     kafka_lwt = callPackage ../development/ocaml-modules/kafka/lwt.nix { };
 
+    kcas = callPackage ../development/ocaml-modules/kcas { };
+
     ke = callPackage ../development/ocaml-modules/ke { };
 
     kicadsch = callPackage ../development/ocaml-modules/kicadsch { };
@@ -1002,7 +1004,7 @@ let
 
     mirage-clock = callPackage ../development/ocaml-modules/mirage-clock { };
 
-    mirage-clock-freestanding = callPackage ../development/ocaml-modules/mirage-clock/freestanding.nix { };
+    mirage-clock-solo5 = callPackage ../development/ocaml-modules/mirage-clock/solo5.nix { };
 
     mirage-clock-unix = callPackage ../development/ocaml-modules/mirage-clock/unix.nix { };
 
@@ -1151,6 +1153,8 @@ let
 
     ocaml-protoc = callPackage ../development/ocaml-modules/ocaml-protoc { };
 
+    ocaml-protoc-plugin = callPackage ../development/ocaml-modules/ocaml-protoc-plugin { };
+
     ocaml-r = callPackage ../development/ocaml-modules/ocaml-r { };
 
     ocaml-recovery-parser = callPackage ../development/tools/ocaml/ocaml-recovery-parser { };
@@ -1172,7 +1176,24 @@ let
 
     ocamlc-loc = callPackage ../development/ocaml-modules/ocamlc-loc { };
 
-    ocamlformat-rpc-lib = callPackage ../development/ocaml-modules/ocamlformat-rpc-lib { };
+    # Older versions of OCamlformat should be removed when their usage decrease
+    # This script scraps Github looking for OCamlformat's options and versions usage:
+    #  https://gist.github.com/Julow/110dc94308d6078225e0665e3eccd433
+    ocamlformat_0_19_0 = ocamlformat.override { version = "0.19.0"; };
+    ocamlformat_0_20_0 = ocamlformat.override { version = "0.20.0"; };
+    ocamlformat_0_20_1 = ocamlformat.override { version = "0.20.1"; };
+    ocamlformat_0_21_0 = ocamlformat.override { version = "0.21.0"; };
+    ocamlformat_0_22_4 = ocamlformat.override { version = "0.22.4"; };
+    ocamlformat_0_23_0 = ocamlformat.override { version = "0.23.0"; };
+    ocamlformat_0_24_1 = ocamlformat.override { version = "0.24.1"; };
+    ocamlformat_0_25_1 = ocamlformat.override { version = "0.25.1"; };
+    ocamlformat_0_26_0 = ocamlformat.override { version = "0.26.0"; };
+
+    ocamlformat = callPackage ../development/ocaml-modules/ocamlformat/ocamlformat.nix {};
+
+    ocamlformat-lib = callPackage ../development/ocaml-modules/ocamlformat/ocamlformat-lib.nix { };
+
+    ocamlformat-rpc-lib = callPackage ../development/ocaml-modules/ocamlformat/ocamlformat-rpc-lib.nix { };
 
     ocamlfuse = callPackage ../development/ocaml-modules/ocamlfuse { };
 
@@ -1418,7 +1439,10 @@ let
 
     psq = callPackage ../development/ocaml-modules/psq { };
 
-    ptime = callPackage ../development/ocaml-modules/ptime { };
+    ptime =
+      if lib.versionAtLeast ocaml.version "4.08"
+      then callPackage ../development/ocaml-modules/ptime { }
+      else null;
 
     ptmap = callPackage ../development/ocaml-modules/ptmap { };
 
@@ -1440,7 +1464,13 @@ let
 
     qcheck-core = callPackage ../development/ocaml-modules/qcheck/core.nix { };
 
+    qcheck-lin = callPackage ../development/ocaml-modules/qcheck/lin.nix { };
+
+    qcheck-multicoretests-util = callPackage ../development/ocaml-modules/qcheck/multicoretests-util.nix { };
+
     qcheck-ounit = callPackage ../development/ocaml-modules/qcheck/ounit.nix { };
+
+    qcheck-stm = callPackage ../development/ocaml-modules/qcheck/stm.nix { };
 
     qtest = callPackage ../development/ocaml-modules/qtest { };
 
@@ -1516,6 +1546,8 @@ let
     secp256k1-internal = callPackage ../development/ocaml-modules/secp256k1-internal { };
 
     sedlex = callPackage ../development/ocaml-modules/sedlex { };
+
+    sel = callPackage ../development/ocaml-modules/sel {};
 
     semaphore-compat = callPackage ../development/ocaml-modules/semaphore-compat { };
 
@@ -1603,6 +1635,8 @@ let
 
     theora = callPackage ../development/ocaml-modules/theora { };
 
+    thread-table = callPackage ../development/ocaml-modules/thread-table { };
+
     timed = callPackage ../development/ocaml-modules/timed { };
 
     tiny_httpd = callPackage ../development/ocaml-modules/tiny_httpd { };
@@ -1622,6 +1656,10 @@ let
     torch = callPackage ../development/ocaml-modules/torch {
       inherit (pkgs.python3Packages) torch;
     };
+
+    trace = callPackage ../development/ocaml-modules/trace { };
+
+    trace-tef = callPackage ../development/ocaml-modules/trace/tef.nix { };
 
     trie = callPackage ../development/ocaml-modules/trie { };
 
@@ -1775,7 +1813,7 @@ let
 
     ### End ###
 
-  })).overrideScope' liftJaneStreet;
+  })).overrideScope liftJaneStreet;
 
 in let inherit (pkgs) callPackage; in rec
 {

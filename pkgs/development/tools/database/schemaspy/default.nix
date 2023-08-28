@@ -1,5 +1,4 @@
 { lib
-, javaPackages
 , maven
 , jre
 , makeWrapper
@@ -9,7 +8,7 @@
 , ensureNewerSourcesHook
 }:
 
-javaPackages.mavenfod rec {
+maven.buildMavenPackage rec {
   pname = "schemaspy";
   version = "6.1.1-SNAPSHOT";
 
@@ -34,7 +33,6 @@ javaPackages.mavenfod rec {
   nativeBuildInputs = [
     makeWrapper
     git
-    maven
 
     # springframework boot gets angry about 1970 sources
     # fix from https://github.com/nix-community/mavenix/issues/25

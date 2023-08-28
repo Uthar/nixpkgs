@@ -1,4 +1,4 @@
-{ lib, javaPackages, stdenv, fetchFromGitHub
+{ lib, stdenv, fetchFromGitHub
 , jdk, maven
 , makeWrapper
 }:
@@ -10,7 +10,7 @@ let
     else if stdenv.isWindows then "windows"
     else throw "unsupported platform";
 in
-javaPackages.mavenfod rec {
+maven.buildMavenPackage rec {
   pname = "java-language-server";
   version = "0.2.38";
 
@@ -24,9 +24,9 @@ javaPackages.mavenfod rec {
 
   mvnFetchExtraArgs.dontConfigure = true;
   mvnParameters = "-DskipTests";
-  mvnHash = "sha256-bzYBSrCS9Kp+qnVO60h915Or1VWabphwLEu6lcBULuc=";
+  mvnHash = "sha256-XhAqd67RtETd9XvqbiEuTOwPUsUtoLkhXy2Dde7NLTo=";
 
-  nativeBuildInputs = [ maven jdk makeWrapper ];
+  nativeBuildInputs = [ jdk makeWrapper ];
 
   dontConfigure = true;
   preBuild = ''
@@ -56,6 +56,5 @@ javaPackages.mavenfod rec {
     homepage = "https://github.com/georgewfraser/java-language-server";
     license = licenses.mit;
     maintainers = with maintainers; [ hqurve ];
-    platforms = platforms.all;
   };
 }

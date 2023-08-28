@@ -1,4 +1,5 @@
 { lib
+, stdenv
 , fetchFromGitHub
 , buildNpmPackage
 , nixosTests
@@ -14,32 +15,23 @@
 , unpaper
 , poppler_utils
 , liberation_ttf
+, xcbuild
 }:
 
 let
-  version = "1.16.1";
+  version = "1.17.2";
 
   src = fetchFromGitHub {
     owner = "paperless-ngx";
     repo = "paperless-ngx";
     rev = "refs/tags/v${version}";
-    hash = "sha256-KmCUViKyjS/1+PL48TOeamYjSkg4J6ywvHgcIhNtVss=";
+    hash = "sha256-/0Ml3NRTghqNykB1RZfqDW9TtENnSRM7wqG7Vn4Kl04=";
   };
 
   # Use specific package versions required by paperless-ngx
   python = python3.override {
     packageOverrides = self: super: {
       django = super.django_4;
-
-      # Paperless tests fail with tika-client==0.1.0. Upstream WIP fix is at
-      # https://github.com/paperless-ngx/paperless-ngx/pull/3617
-      tika-client = super.tika-client.overridePythonAttrs (oldAttrs: rec {
-        version = "0.0.3";
-        src = oldAttrs.src.override {
-          rev = version;
-          hash = "sha256-IKPTQ4n/j/W292F0JpSEUC0X8E1tr961WEcNCN5ymoU=";
-        };
-      });
     };
   };
 
@@ -59,10 +51,12 @@ let
     pname = "paperless-ngx-frontend";
     inherit version src;
 
-    npmDepsHash = "sha256-GDdHlrU1x/uxDy4mwK7G4F9b7AJat3nhQESUpfDdKeE=";
+    npmDepsHash = "sha256-6EvC9Ka8gl0eRgJtHooB3yQNVGYzuH/WRga4AtzQ0EY=";
 
     nativeBuildInputs = [
       python3
+    ] ++ lib.optionals stdenv.isDarwin [
+      xcbuild
     ];
 
     postPatch = ''
@@ -75,6 +69,13 @@ let
     npmBuildFlags = [
       "--" "--configuration" "production"
     ];
+
+    doCheck = true;
+    checkPhase = ''
+      runHook preCheck
+      npm run test
+      runHook postCheck
+    '';
 
     installPhase = ''
       runHook preInstall
@@ -133,6 +134,7 @@ python.pkgs.buildPythonApplication rec {
     h11
     hiredis
     httptools
+    httpx
     humanfriendly
     humanize
     hyperlink
@@ -246,6 +248,7 @@ python.pkgs.buildPythonApplication rec {
     pytest-django
     pytest-env
     pytest-httpx
+    pytest-rerunfailures
     pytest-xdist
     pytestCheckHook
     reportlab
@@ -281,6 +284,8 @@ python.pkgs.buildPythonApplication rec {
     "testNormalOperation"
   ];
 
+  doCheck = !stdenv.isDarwin;
+
   passthru = {
     inherit python path frontend;
     tests = { inherit (nixosTests) paperless; };
@@ -291,6 +296,7 @@ python.pkgs.buildPythonApplication rec {
     homepage = "https://docs.paperless-ngx.com/";
     changelog = "https://github.com/paperless-ngx/paperless-ngx/releases/tag/v${version}";
     license = licenses.gpl3Only;
-    maintainers = with maintainers; [ lukegb gador erikarvstedt ];
+    platforms = platforms.unix;
+    maintainers = with maintainers; [ lukegb gador erikarvstedt leona ];
   };
 }

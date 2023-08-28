@@ -11,16 +11,16 @@
 
 buildPythonPackage rec {
   pname = "holidays";
-  version = "0.26";
+  version = "0.29";
   format = "setuptools";
 
-  disabled = pythonOlder "3.7";
+  disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
     owner = "dr-prodigy";
     repo = "python-holidays";
     rev = "refs/tags/v.${version}";
-    hash = "sha256-4kRIhIjOQB23ihZBs6J6/ZriLiMD87m/xOqMXga5Ypw=";
+    hash = "sha256-ijhqu0LzQzpjDSe9ZjNhgdjq/DJuD7oVbRTLX97nGHM=";
   };
 
   propagatedBuildInputs = [

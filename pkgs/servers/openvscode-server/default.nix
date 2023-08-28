@@ -58,13 +58,13 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "openvscode-server";
-  version = "1.79.1";
+  version = "1.79.2";
 
   src = fetchFromGitHub {
     owner = "gitpod-io";
     repo = "openvscode-server";
     rev = "openvscode-server-v${finalAttrs.version}";
-    hash = "sha256-yMJo66RYcbVyIFKNNxDe0U9CPvaez/kTu9sPGcaESPw=";
+    hash = "sha256-u5LuDcKTN4CEpRnFCeEbni6hiDDwTV9LUEmXaQYJvJw=";
   };
 
   yarnCache = stdenv.mkDerivation {
@@ -219,5 +219,6 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dguenther ghuntley emilytrau ];
     platforms = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+    mainProgram = "openvscode-server";
   };
 })
