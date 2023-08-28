@@ -969,6 +969,23 @@ let
     ];
   };
 
+  lem-sdl2 = build-asdf-system rec {
+    pname = "lem-sdl2";
+    version = "2.1.0";
+    src = pkgs.fetchFromGitHub {
+      owner = "lem-project";
+      repo = "lem";
+      rev = "v${version}";
+      sha256 = "sha256-YKJyFed6aUvr1bogNWnoeiFHfg0v7KLxlnoGO8Y3Va4=";
+    };
+    lispLibs = [
+      super.sdl2
+      super.sdl2-ttf
+      super.sdl2-image
+      self.lem
+    ];
+  };
+
   });
 
 in packages
