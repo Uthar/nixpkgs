@@ -89,7 +89,7 @@ struct FossilInputScheme : InputScheme
         if (maybeGetStrAttr(attrs, "type") != "fossil") return {};
 
         for (auto & [name, value] : attrs)
-            if (name != "type" && name != "url" && name != "ref" && name != "rev"  && name != "narHash" && name != "name")
+            if (name != "type" && name != "url" && name != "ref" && name != "rev"  && name != "narHash" && name != "name" && name != "lastModified")
                 throw Error("unsupported Fossil input attribute '%s'", name);
 
         parseURL(getStrAttr(attrs, "url"));
@@ -132,7 +132,7 @@ struct FossilInputScheme : InputScheme
     {
         auto [isLocal, actualUrl] = getActualUrl(input);
 
-        runFossil({ "clone", "--no-open", actualUrl, destDir });
+        runFossil({ "clone", "--once", "--no-open", actualUrl, destDir });
     }
 
     std::optional<Path> getSourcePath(const Input & input) override
@@ -296,7 +296,7 @@ struct FossilInputScheme : InputScheme
         }
 
         if (auto res = getCache()->lookup(store, unlockedAttrs)) {
-            Hash hash = Hash::parseAny("", htSHA1);
+            Hash hash = Hash::dummy;
             try {
               hash = Hash::parseAny(getStrAttr(res->first, "rev"), htSHA256);
             } catch (BadHash & e) {
@@ -321,7 +321,7 @@ struct FossilInputScheme : InputScheme
 
         if (!pathExists(repoFile)) {
           createDirs(dirOf(repoFile));
-          runFossil({ "clone", actualUrl, repoFile });
+          runFossil({ "clone", "--once", actualUrl, repoFile });
         }
         if (!pathExists(checkoutDir)) {
             createDirs(dirOf(checkoutDir));
@@ -352,7 +352,8 @@ struct FossilInputScheme : InputScheme
             try {
               auto ref = input.getRef();
               std::cout << "BOOM8: " << checkoutDir << std::endl;
-              runFossil({ "--chdir", checkoutDir, "up", *ref });
+              runFossil({ "--chdir", checkoutDir, "pull", "--once", actualUrl });
+              runFossil({ "--chdir", checkoutDir, "up", "--nosync", *ref });
             } catch (Error & e) {
               if (!pathExists(repoFile)) throw;
               warn("could not update local clone of Fossil repository '%s'; continuing with the most recent version", actualUrl);
