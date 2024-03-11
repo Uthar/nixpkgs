@@ -800,132 +800,298 @@ let
     ];
   };
 
-  micros = build-asdf-system rec {
-    pname = "micros";
-    version = "0.0.0";
+  jsonrpc = super.jsonrpc.overrideLispAttrs (a: {
     src = pkgs.fetchFromGitHub {
-      owner = "lem-project";
-      repo = "micros";
-      rev = "ed264a27262baeed493cdde338873bf4afc3721c";
-      sha256 = "sha256-lg40KhrDY+oi1pU3h9iTtmj90kqWEhb5sO/eVDEEFmM=";
+      owner = "cxxxr";
+      repo = "jsonrpc";
+      rev = "9f6f55b6e64fc30ff334b46bf6761c65908570f2";
+      sha256 = "UQK8WRSREWSxfe8RkBTxNuZZt7DUnk1maAx2La5DuyY=";
     };
-    patches = [ ./patches/lem-micros-no-ql.patch ];
-  };
-
-  lem-base = build-asdf-system rec {
-    pname = "lem-base";
-    version = "2.1.0";
-    src = pkgs.fetchFromGitHub {
-      owner = "lem-project";
-      repo = "lem";
-      rev = "v${version}";
-      sha256 = "sha256-YKJyFed6aUvr1bogNWnoeiFHfg0v7KLxlnoGO8Y3Va4=";
-    };
-    lispLibs = [
-      super.iterate
-      super.alexandria
-      super.cl-ppcre
-      super.babel
-      super.log4cl
-      super.closer-mop
-      super.trivia
+    systems = a.systems ++ [
+      "jsonrpc/transport/stdio"
+      "jsonrpc/transport/tcp"
+      # "jsonrpc/yason"
     ];
-  };
-
-  lem-mailbox = build-asdf-system rec {
-    pname = "lem-mailbox";
-    version = "tip";
-    src = pkgs.fetchFromGitHub {
-      owner = "lem-project";
-      repo = "lem-mailbox";
-      rev = "df718abd72fe5d41c4b168ac254f821226adb4b0";
-      sha256 = "sha256-C3GOZGoX5z/V5RaPNzFQC9z1y8ZfLQA3i73z991F2Gw=";
-    };
-    lispLibs = [
-      super.bordeaux-threads
-      super.bt-semaphore
-      super.queues
-      super.queues_dot_simple-cqueue
+    lispLibs = a.lispLibs ++ [
+      self.cl_plus_ssl
+      self.quri
+      self.fast-io
+      self.trivial-utf-8
     ];
-  };
+  });
 
-  lem-encodings = build-asdf-system rec {
-    pname = "lem-encodings";
-    version = "2.1.0";
-    src = pkgs.fetchFromGitHub {
-      owner = "lem-project";
-      repo = "lem";
-      rev = "v${version}";
-      sha256 = "sha256-YKJyFed6aUvr1bogNWnoeiFHfg0v7KLxlnoGO8Y3Va4=";
-    };
-    lispLibs = [ self.lem-base ];
-  };
+  #### Lem
 
-  lem = build-asdf-system rec {
-    pname = "lem";
-    version = "2.1.0";
-    src = pkgs.fetchFromGitHub {
-      owner = "lem-project";
-      repo = "lem";
-      rev = "v${version}";
-      sha256 = "sha256-YKJyFed6aUvr1bogNWnoeiFHfg0v7KLxlnoGO8Y3Va4=";
+  inherit (let 
+    lem-src = pkgs.runCommand "source" {} ''
+      mkdir $out
+      cp -Tr ${pkgs.fetchFromGitHub {
+        owner = "lem-project";
+        repo = "lem";
+        rev = "ce62532cbb0fe6a4fb54844f33a008067250b47c";
+        sha256 = "fkN65kevYVLXtrfOFG+EPe1vACRpGny9LGYB4ETbNt8=";
+      }} $out/lem
+      cp -Tr ${pkgs.fetchFromGitHub {
+        owner = "lem-project";
+        repo = "lem-base16-themes";
+        rev = "d7ece2372e94bca76bba7bfc5da3d05eaef31265";
+        sha256 = "LOB2jhL8I533R3nZQrAmFqPMpIbrJf/NPZNZiyYe1YM=";
+      }} $out/lem-base16-themes
+    '';
+    micros = build-asdf-system rec {
+      pname = "micros";
+      version = "0.0.0-trunk";
+      src = pkgs.fetchFromGitHub {
+        owner = "lem-project";
+        repo = "micros";
+        rev = "23f52d5349382d3d50c855b75a665f3158286390";
+        sha256 = "Qgz1yi2JIm7QKIBAagiWl9c1BJdOhh4XT3NFyvXpHI4=";
+      };
+      patches = [ ./patches/lem-micros-no-ql.patch ];
     };
-    patches = [ ./patches/lem-no-ql.patch ./patches/lem-no-ext.patch ];
-    lispLibs = (with super; [
-      alexandria
-      trivial-gray-streams
-      trivial-types
-      cl-ppcre
-      inquisitor
-      babel
-      bordeaux-threads
-      yason
-      log4cl
-      split-sequence
-      str
-      dexador
-    ]) ++ (with self; [
+    lem-mailbox = build-asdf-system rec {
+      pname = "lem-mailbox";
+      version = "trunk";
+      src = pkgs.fetchFromGitHub {
+        owner = "lem-project";
+        repo = "lem-mailbox";
+        rev = "12d629541da440fadf771b0225a051ae65fa342a";
+        sha256 = "hb6GSWA7vUuvSSPSmfZ80aBuvSVyg74qveoCPRP2CeI=";
+      };
+      lispLibs = [
+        self.bordeaux-threads
+        self.bt-semaphore
+        self.queues
+        self.queues_dot_simple-cqueue
+      ];
+    };
+    lem-lisp-syntax = [
+      self.cl-ppcre
       micros
-      lem-base
-      lem-encodings
-      lem-mailbox
-    ]);
-    systems = [ "lem" "lem/extensions" ];
-  };
-
-  lem-ncurses = build-asdf-system rec {
-    pname = "lem-ncurses";
-    version = "2.1.0";
-    src = pkgs.fetchFromGitHub {
-      owner = "lem-project";
-      repo = "lem";
-      rev = "v${version}";
-      sha256 = "sha256-YKJyFed6aUvr1bogNWnoeiFHfg0v7KLxlnoGO8Y3Va4=";
-    };
-    lispLibs = [
-      self.cffi
-      super.cl-charms
-      super.cl-setlocale
-      self.lem
+      self.trivia
     ];
-  };
-
-  lem-sdl2 = build-asdf-system rec {
-    pname = "lem-sdl2";
-    version = "2.1.0";
-    src = pkgs.fetchFromGitHub {
-      owner = "lem-project";
-      repo = "lem";
-      rev = "v${version}";
-      sha256 = "sha256-YKJyFed6aUvr1bogNWnoeiFHfg0v7KLxlnoGO8Y3Va4=";
-    };
-    lispLibs = [
-      super.sdl2
-      super.sdl2-ttf
-      super.sdl2-image
-      self.lem
+    lem-process = [
+      self.async-process
     ];
-  };
+    lem-socket-utils = [
+      self.usocket
+    ];
+    lem-lsp-base = [
+      self.cl-change-case
+      self.bordeaux-threads
+      self.jsonrpc
+      self.trivia_dot_level2
+      self.quri
+    ];
+    lem-language-server = [
+      self.alexandria
+      self.jsonrpc
+      self.usocket
+      self.log4cl
+      self.quri
+      self.cl-change-case
+      self.async-process
+      micros
+    ] ++ lem-lisp-syntax
+      ++ lem-socket-utils
+      ++ lem-lsp-base;
+    lem-language-client = [
+      self.jsonrpc
+      self.cl-package-locks
+    ] ++ lem-lsp-base;
+    lem-welcome = [] ++ lem-vi-mode;
+    lem-lsp-mode = [
+      self.alexandria
+      self.cl-package-locks
+      self.jsonrpc
+      self.quri
+      self.trivia
+    ] ++ lem-socket-utils
+      ++ lem-process
+      ++ lem-language-server
+      ++ lem-language-client;
+    lem-vi-mode =  [
+      self.esrap
+      self.closer-mop
+      self.cl-ppcre
+      self.parse-number
+      self.cl-package-locks
+      self.alexandria
+      self.split-sequence
+      self.trivial-types
+    ] ++ lem-lisp-mode;
+    lem-lisp-mode =  [
+      self.alexandria
+      self.trivial-types
+      self.usocket
+      micros
+      self.trivia
+      lem-lisp-syntax
+      lem-process
+      lem-socket-utils
+      lem-lsp-mode
+    ];
+    lem-go-mode =  [
+      self.yason
+    ] ++ lem-lsp-mode;
+    lem-swift-mode =  [
+      self.yason
+    ] ++ lem-lsp-mode;
+    lem-c-mode =  [] ++ lem-lisp-mode;
+    lem-xml-mode =  [ self.cl-ppcre ];
+    lem-html-mode =  lem-xml-mode ++ [ self.cl-ppcre ];
+    lem-python-mode =  [] ++ lem-process;
+    lem-posix-shell-mode =  [ ];
+    lem-markdown-mode =  [ ];
+    lem-js-mode =  [] ++ lem-xml-mode;
+    lem-typescript-mode =  [] ++ lem-lsp-mode ++ lem-js-mode;
+    lem-json-mode =  [] ++ lem-js-mode;
+    lem-css-mode =  [ self.cl-ppcre ];
+    lem-rust-mode =  [] ++ lem-lisp-mode;
+    lem-paredit-mode =  [];
+    lem-nim-mode =  [];
+    lem-scheme-mode =  [
+      self.alexandria
+      self.trivial-types
+      self.usocket
+      self.trivia
+      self.swank
+    ] ++ lem-process ++ lem-socket-utils;
+    lem-patch-mode =  [ self.cl-ppcre ];
+    lem-yaml-mode =  [];
+    lem-review-mode =  [];
+    lem-asciidoc-mode =  [];
+    lem-dart-mode =  [];
+    lem-scala-mode =  [] ++ lem-js-mode;
+    lem-dot-mode =  [ self.cl-ppcre ];
+    lem-java-mode =  [];
+    lem-haskell-mode =  [];
+    lem-ocaml-mode =  [];
+    lem-asm-mode =  [];
+    lem-makefile-mode =  [];
+    lem-shell-mode =  [] ++ lem-process ++ lem-lisp-mode;
+    lem-sql-mode =  [];
+    lem-elixir-mode =  [] ++ lem-lsp-mode ++ lem-process;
+    lem-documentation-mode =  [] ++ lem-lisp-syntax;
+    lem-elisp-mode =  [ self.jsonrpc ] ++ lem-lisp-mode ++ lem-process;
+    lem-color-preview = [];
+    lem = build-asdf-system rec {
+      pname = "lem";
+      version = "2.1.0-trunk";
+      src = lem-src;
+       lispLibs = [
+        self.iterate
+        self.closer-mop
+        self.trivia
+        self.alexandria
+        self.trivial-gray-streams
+        self.trivial-types
+        self.cl-ppcre
+        micros
+        self.inquisitor
+        self.babel
+        self.bordeaux-threads
+        self.yason
+        self.log4cl
+        self.split-sequence
+        self.str
+        self.dexador
+        lem-mailbox
+      ] ++ lem-welcome
+        ++ lem-lsp-mode
+        ++ lem-vi-mode
+        ++ lem-lisp-mode
+        ++ lem-go-mode
+        ++ lem-swift-mode
+        ++ lem-c-mode
+        ++ lem-xml-mode
+        ++ lem-html-mode
+        ++ lem-python-mode
+        ++ lem-posix-shell-mode
+        ++ lem-markdown-mode
+        ++ lem-js-mode
+        ++ lem-typescript-mode
+        ++ lem-json-mode
+        ++ lem-css-mode
+        ++ lem-rust-mode
+        ++ lem-paredit-mode
+        ++ lem-nim-mode
+        ++ lem-scheme-mode
+        ++ lem-patch-mode
+        ++ lem-yaml-mode
+        ++ lem-review-mode
+        ++ lem-asciidoc-mode
+        ++ lem-dart-mode
+        ++ lem-scala-mode
+        ++ lem-dot-mode
+        ++ lem-java-mode
+        ++ lem-haskell-mode
+        ++ lem-ocaml-mode
+        ++ lem-asm-mode
+        ++ lem-makefile-mode
+        ++ lem-shell-mode
+        ++ lem-sql-mode
+        ++ lem-elixir-mode
+        ++ lem-documentation-mode
+        ++ lem-elisp-mode
+        ++ lem-color-preview;
+      systems = [
+        "lem"
+        "lem/extensions"
+        "lem-welcome"
+        "lem-lsp-mode"
+        "lem-vi-mode"
+        "lem-lisp-mode"
+        "lem-go-mode"
+        "lem-swift-mode"
+        "lem-c-mode"
+        "lem-xml-mode"
+        "lem-html-mode"
+        "lem-python-mode"
+        "lem-posix-shell-mode"
+        "lem-markdown-mode"
+        "lem-js-mode"
+        "lem-typescript-mode"
+        "lem-json-mode"
+        "lem-css-mode"
+        "lem-rust-mode"
+        "lem-paredit-mode"
+        "lem-nim-mode"
+        "lem-scheme-mode"
+        "lem-patch-mode"
+        "lem-yaml-mode"
+        "lem-review-mode"
+        "lem-asciidoc-mode"
+        "lem-dart-mode"
+        "lem-scala-mode"
+        "lem-dot-mode"
+        "lem-java-mode"
+        "lem-haskell-mode"
+        "lem-ocaml-mode"
+        "lem-asm-mode"
+        "lem-makefile-mode"
+        "lem-shell-mode"
+        "lem-sql-mode"
+        "lem-base16-themes"
+        "lem-elixir-mode"
+        "lem-documentation-mode"
+        "lem-elisp-mode"
+        "lem-color-preview"
+      ];
+    };
+    lem-sdl2 = build-asdf-system rec {
+      pname = "lem-sdl2";
+      version = "2.1.0-trunk";
+      src = lem-src;
+      lispLibs = [
+        self.sdl2
+        self.sdl2-ttf
+        self.sdl2-image
+        lem
+      ];
+    };
+  in { inherit lem-sdl2; })
+    lem-sdl2;
 
   sb-cga = build-asdf-system {
     pname = "sb-cga";
