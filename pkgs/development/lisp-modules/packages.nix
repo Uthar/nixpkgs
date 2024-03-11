@@ -810,7 +810,7 @@ let
     systems = a.systems ++ [
       "jsonrpc/transport/stdio"
       "jsonrpc/transport/tcp"
-      # "jsonrpc/yason"
+      "jsonrpc/yason"
     ];
     lispLibs = a.lispLibs ++ [
       self.cl_plus_ssl
@@ -910,7 +910,7 @@ let
       ++ lem-process
       ++ lem-language-server
       ++ lem-language-client;
-    lem-vi-mode =  [
+    lem-vi-mode = [
       self.esrap
       self.closer-mop
       self.cl-ppcre
@@ -926,15 +926,14 @@ let
       self.usocket
       micros
       self.trivia
-      lem-lisp-syntax
-      lem-process
-      lem-socket-utils
-      lem-lsp-mode
-    ];
-    lem-go-mode =  [
+    ] ++ lem-lisp-syntax
+      ++ lem-process
+      ++ lem-socket-utils
+      ++ lem-lsp-mode;
+    lem-go-mode = [
       self.yason
     ] ++ lem-lsp-mode;
-    lem-swift-mode =  [
+    lem-swift-mode = [
       self.yason
     ] ++ lem-lsp-mode;
     lem-c-mode =  [] ++ lem-lisp-mode;
@@ -997,7 +996,13 @@ let
         self.str
         self.dexador
         lem-mailbox
-      ] ++ lem-welcome
+      ] ++ lem-lisp-syntax
+        ++ lem-process
+        ++ lem-socket-utils
+        ++ lem-lsp-base
+        ++ lem-language-server
+        ++ lem-language-client
+        ++ lem-welcome
         ++ lem-lsp-mode
         ++ lem-vi-mode
         ++ lem-lisp-mode
@@ -1038,6 +1043,12 @@ let
       systems = [
         "lem"
         "lem/extensions"
+        "lem-lisp-syntax"
+        "lem-process"
+        "lem-socket-utils"
+        "lem-lsp-base"
+        "lem-language-server"
+        "lem-language-client"
         "lem-welcome"
         "lem-lsp-mode"
         "lem-vi-mode"
@@ -1090,8 +1101,8 @@ let
         lem
       ];
     };
-  in { inherit lem-sdl2; })
-    lem-sdl2;
+  in { inherit lem lem-sdl2; })
+    lem lem-sdl2;
 
   sb-cga = build-asdf-system {
     pname = "sb-cga";
