@@ -1121,6 +1121,7 @@ let
         wrapProgram $bin/bin/lem \
           --prefix LD_LIBRARY_PATH : $LD_LIBRARY_PATH
       '';
+      meta.mainProgram = "lem";
     };
   in { inherit lem lem-sdl2; })
     lem lem-sdl2;
