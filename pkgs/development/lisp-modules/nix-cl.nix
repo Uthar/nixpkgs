@@ -202,6 +202,8 @@ let
         find $out -name "*.asd" \
         | grep -v "/\(${mkSystemsRegex systems}\)\.asd$" \
         | xargs rm -fv || true
+
+        runHook postInstall
       '';
 
       dontPatchShebangs = true;
@@ -217,6 +219,7 @@ let
       patches = [];
       propagatedBuildInputs = args.propagatedBuildInputs or []
           ++ lispLibs ++ javaLibs ++ nativeLibs;
+      nativeBuildInputs = args.nativeBuildInputs or [] ++ [args.pkg];
       meta = (args.meta or {}) // {
         maintainers = args.meta.maintainers or lib.teams.lisp.members;
       };

@@ -1099,6 +1099,7 @@ let
     lem-sdl2 = build-asdf-system rec {
       pname = "lem-sdl2";
       version = "2.1.0-trunk";
+      outputs = [ "bin" "out" ];
       src = lem-src;
       lispLibs = [
         self.sdl2
@@ -1106,6 +1107,20 @@ let
         self.sdl2-image
         lem
       ];
+      buildInputs = [ pkgs.makeWrapper ];
+      postInstall = ''
+        mkdir -p $bin/bin
+        sbcl --eval '(load "${lem.asdfFasl}/asdf.${lem.faslExt}")' \
+        --eval '(asdf:load-system "lem-sdl2")' \
+        --eval "(sb-ext:save-lisp-and-die \
+                  \"$bin/bin/lem\" \
+                  :executable t \
+                  #+sb-core-compression :compression \
+                  #+sb-core-compression t \
+                  :toplevel #'lem:main)"
+        wrapProgram $bin/bin/lem \
+          --prefix LD_LIBRARY_PATH : $LD_LIBRARY_PATH
+      '';
     };
   in { inherit lem lem-sdl2; })
     lem lem-sdl2;
