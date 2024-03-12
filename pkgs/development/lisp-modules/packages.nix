@@ -1123,8 +1123,35 @@ let
       '';
       meta.mainProgram = "lem";
     };
-  in { inherit lem lem-sdl2; })
-    lem lem-sdl2;
+    lem-ncurses = build-asdf-system rec {
+      pname = "lem-ncurses";
+      version = "2.1.0-trunk";
+      outputs = [ "bin" "out" ];
+      src = lem-src;
+      lispLibs = [
+        self.cffi
+        self.cl-charms
+        self.cl-setlocale
+        lem
+      ];
+      buildInputs = [ pkgs.makeWrapper ];
+      postInstall = ''
+        mkdir -p $bin/bin
+        sbcl --eval '(load "${lem.asdfFasl}/asdf.${lem.faslExt}")' \
+        --eval '(asdf:load-system "lem-ncurses")' \
+        --eval "(sb-ext:save-lisp-and-die \
+                  \"$bin/bin/lem\" \
+                  :executable t \
+                  #+sb-core-compression :compression \
+                  #+sb-core-compression t \
+                  :toplevel #'lem:main)"
+        wrapProgram $bin/bin/lem \
+          --prefix LD_LIBRARY_PATH : $LD_LIBRARY_PATH
+      '';
+      meta.mainProgram = "lem";
+    };
+  in { inherit lem lem-sdl2 lem-ncurses; })
+    lem lem-sdl2 lem-ncurses;
 
   sb-cga = build-asdf-system {
     pname = "sb-cga";
