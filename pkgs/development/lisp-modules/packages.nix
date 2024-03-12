@@ -865,6 +865,12 @@ let
         self.queues_dot_simple-cqueue
       ];
     };
+    # These are lists of dependencies of each lem extension or library
+    #
+    # Can't build them separately, because they depend on lem which depends on
+    # them (circular dependency). But still for easiser maintenance, the lisp
+    # dependencies are specified with these lists, then just added to the
+    # one-big-lem-derivation which builds every extension.p
     lem-lisp-syntax = [
       self.cl-ppcre
       micros
