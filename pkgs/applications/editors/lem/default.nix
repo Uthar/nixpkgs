@@ -327,6 +327,7 @@ let
       test -x $out/bin/lem
       wrapProgram $out/bin/lem --prefix LD_LIBRARY_PATH : $LD_LIBRARY_PATH
     '';
+    meta.mainProgram = "lem";
   };
 
 in lem-sdl2
