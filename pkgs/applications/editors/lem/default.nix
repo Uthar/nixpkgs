@@ -1,6 +1,7 @@
 {
   stdenv
 , lib
+, runCommand
 , fetchFromGitHub
 , makeWrapper
 , sbcl
@@ -124,6 +125,18 @@ let
       nativeLibs = [
         SDL2_ttf
       ];
+      meta.passthru.tests.freetype-png = runCommand "test" {} ''
+        ${sbcl'.withPackages(p:[p.sdl2-ttf])}/bin/sbcl --script <<EOF
+          (load (sb-ext:posix-getenv "ASDF"))
+          (asdf:load-system 'sdl2-ttf)
+          (sdl2-ttf:init)
+          (let* ((path #P"${lem-sdl2.src}/frontends/sdl2/resources/fonts/NotoColorEmoji.ttf")
+                 (font (sdl2-ttf:open-font path 10)))
+            (sdl2-ttf:render-utf8-blended font "🔒" 12 34 56 0))
+          (with-open-file (out "$out" :direction :output)
+            (format out "ok~%"))
+      EOF
+      '';
     };
     
     sdl2-image = sbcl.buildASDFSystem {
