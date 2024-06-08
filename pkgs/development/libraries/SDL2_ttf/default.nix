@@ -9,7 +9,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-1Iy9HOR1ueF4IGvzty1Wtm2E1E9krAWAMyg5YjTWdyM=";
   };
 
-  configureFlags = [ "--disable-harfbuzz-builtin" ]
+  configureFlags = [ "--disable-harfbuzz-builtin" "--disable-freetype-builtin" ]
     ++ lib.optionals stdenv.isDarwin [ "--disable-sdltest" ];
 
   nativeBuildInputs = [ pkg-config ];
