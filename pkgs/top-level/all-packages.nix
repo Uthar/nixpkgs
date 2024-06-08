@@ -32474,6 +32474,8 @@ with pkgs;
 
   ledger2beancount = callPackage ../tools/text/ledger2beancount { };
 
+  lem = callPackage ../applications/editors/lem { };
+
   lightburn = libsForQt5.callPackage ../applications/graphics/lightburn { };
 
   lighthouse-steamvr = callPackage ../tools/misc/lighthouse-steamvr { };

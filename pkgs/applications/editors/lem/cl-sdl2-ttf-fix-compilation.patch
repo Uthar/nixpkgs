@@ -1,0 +1,13 @@
+--- a/src/helpers.lisp
++++ b/src/helpers.lisp
+@@ -21,7 +21,7 @@
+        ,@(mapcar (lambda (pair)
+                    `(when (plusp (logand ,(first pair) ,value))
+                       (push ',(second pair) ,pack)))
+-                 (nreverse pairs))
++                 (reverse pairs))
+        ,pack)))
+ 
+ (defmacro pack-to-bitwise (packed &body pairs)
+
+Diff finished.  Sat Jun  8 06:25:08 2024
