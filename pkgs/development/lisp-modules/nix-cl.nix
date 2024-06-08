@@ -177,24 +177,14 @@ let
         asdf = "${asdfFasl}/asdf.${faslExt}";
       };
 
-      postPatch = let
-        mkSystemsRegex = systems:
-          concatMapStringsSep "\\|" (replaceStrings ["." "+"] ["[.]" "[+]"]) systems;
-      in ''
-        # Remove all .asd files except for those in `systems`.
-        find . -name "*.asd" \
-        | grep -v "/\(${mkSystemsRegex systems}\)\.asd$" \
-        | xargs rm -fv || true
-      '';
-
       preConfigure = ''
         source ${./setup-hook.sh}
         buildAsdfPath
       '';
 
       buildPhase = optionalString (src != null) ''
-        export CL_SOURCE_REGISTRY=$CL_SOURCE_REGISTRY:$(pwd)//
-        export ASDF_OUTPUT_TRANSLATIONS="$(pwd):$(pwd):${storeDir}:${storeDir}"
+        export CL_SOURCE_REGISTRY=$CL_SOURCE_REGISTRY:$src//
+        export ASDF_OUTPUT_TRANSLATIONS="$src:$(pwd):${storeDir}:${storeDir}"
         ${pkg}/bin/${program} ${toString flags} < $buildScript
       '';
 
@@ -205,9 +195,18 @@ let
       #
       # Same with '/': `local-time.asd` for system `cl-postgres+local-time.asd`
       installPhase =
+        let
+          mkSystemsRegex = systems:
+            concatMapStringsSep "\\|" (replaceStrings ["." "+"] ["[.]" "[+]"]) systems;
+        in
       ''
         mkdir -pv $out
         cp -r * $out
+
+        # Remove all .asd files except for those in `systems`.
+        find $out -name "*.asd" \
+        | grep -v "/\(${mkSystemsRegex systems}\)\.asd$" \
+        | xargs rm -fv || true
       '';
 
       dontPatchShebangs = true;
