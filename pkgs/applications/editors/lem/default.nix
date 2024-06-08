@@ -247,6 +247,8 @@ let
       ];
       systems = [
         "lem"
+        "lem-tests"
+        "lem-fake-interface"
         "lem-encodings-table"
         "lem-encodings"
         "lem-lisp-syntax"
