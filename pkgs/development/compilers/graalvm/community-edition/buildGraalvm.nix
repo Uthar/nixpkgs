@@ -18,7 +18,7 @@
 , zlib
   # extra params
 , extraCLibs ? [ ]
-, gtkSupport ? stdenv.isLinux
+, headless ? !stdenv.isLinux
 , useMusl ? false
 , ...
 } @ args:
@@ -45,7 +45,7 @@ let
     "xorg"
     "zlib"
     "extraCLibs"
-    "gtkSupport"
+    "headless"
     "useMusl"
     "passthru"
     "meta"
@@ -66,7 +66,7 @@ let
   binPath = lib.makeBinPath (lib.optionals useMusl [ musl-gcc ] ++ [ stdenv.cc ]);
 
   runtimeLibraryPath = lib.makeLibraryPath
-    ([ cups ] ++ lib.optionals gtkSupport [ cairo glib gtk3 ]);
+    ([ cups ] ++ lib.optionals (!headless) [ cairo glib gtk3 ]);
 
   graalvm-ce = stdenv.mkDerivation ({
     pname = "graalvm-ce";

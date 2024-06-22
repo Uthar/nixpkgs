@@ -14,7 +14,7 @@ let
   build = "-ga";
 
   # when building a headless jdk, also bootstrap it with a headless jdk
-  openjdk-bootstrap = openjdk13-bootstrap.override { gtkSupport = !headless; };
+  openjdk-bootstrap = openjdk13-bootstrap.override { inherit headless; };
 
   openjdk = stdenv.mkDerivation rec {
     pname = "openjdk" + lib.optionalString headless "-headless";

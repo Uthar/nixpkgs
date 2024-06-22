@@ -24,7 +24,7 @@ let
   build = "ga";
 
   # when building a headless jdk, also bootstrap it with a headless jdk
-  openjdk-bootstrap = openjdk8-bootstrap.override { gtkSupport = !headless; };
+  openjdk-bootstrap = openjdk8-bootstrap.override { inherit headless; };
 
   openjdk8 = stdenv.mkDerivation rec {
     pname = "openjdk" + lib.optionalString headless "-headless";

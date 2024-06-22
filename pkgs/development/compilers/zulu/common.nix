@@ -16,7 +16,7 @@
   # runtime dependencies
 , cups
   # runtime dependencies for GTK+ Look and Feel
-, gtkSupport ? stdenv.isLinux
+, headless ? !stdenv.isLinux
 , cairo
 , glib
 , gtk2
@@ -42,11 +42,11 @@ let
 
   runtimeDependencies = [
     cups
-  ] ++ lib.optionals gtkSupport [
+  ] ++ lib.optionals (!headless) [
     cairo
     glib
     gtk3
-  ] ++ lib.optionals (gtkSupport && lib.versionOlder dist.jdkVersion "17") [
+  ] ++ lib.optionals ((!headless) && lib.versionOlder dist.jdkVersion "17") [
     gtk2
   ] ++ lib.optionals (stdenv.isLinux && enableJavaFX) [
     ffmpeg.lib
