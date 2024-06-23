@@ -46,13 +46,15 @@ in {
 
     mkBootstrap = adoptopenjdk: path: args:
       /* adoptopenjdk not available for i686, so fall back to our old builds for bootstrapping */
-      if   !stdenv.hostPlatform.isi686
-      then
-        # only linux has the headless option
-        if stdenv.isLinux
-        then adoptopenjdk.jdk-hotspot.override { headless = true; }
-        else adoptopenjdk.jdk-hotspot
-      else callPackage path args;
+      if stdenv.hostPlatform.isi686
+      then callPackage path args
+      # bootstrap from source if possible
+      else if stdenv.isLinux && stdenv.hostPlatform.isx86_64
+      then callPackage path args
+      # only linux has the headless option
+      else if stdenv.isLinux
+      then adoptopenjdk.jdk-hotspot.override { headless = true; }
+      else adoptopenjdk.jdk-hotspot;
 
     mkOpenjdk = path-linux: path-darwin: args:
       if stdenv.isLinux
@@ -110,7 +112,7 @@ in {
       { version = "10"; };
 
     openjdk13-bootstrap = mkBootstrap adoptopenjdk-13
-      ../development/compilers/openjdk/12.nix
+      ../development/compilers/openjdk/12
       (bootstrapArgs // {
         inherit openjdk11-bootstrap;
         /* build segfaults with gcc9 or newer, so use gcc8 like Debian does */
@@ -118,73 +120,73 @@ in {
       });
 
     openjdk14-bootstrap = mkBootstrap adoptopenjdk-14
-      ../development/compilers/openjdk/13.nix
+      ../development/compilers/openjdk/13
       (bootstrapArgs // {
         inherit openjdk13-bootstrap;
       });
 
     openjdk15-bootstrap = mkBootstrap adoptopenjdk-15
-      ../development/compilers/openjdk/14.nix
+      ../development/compilers/openjdk/14
       (bootstrapArgs // {
         inherit openjdk14-bootstrap;
       });
 
     openjdk16-bootstrap = mkBootstrap adoptopenjdk-16
-      ../development/compilers/openjdk/15.nix
+      ../development/compilers/openjdk/15
       (bootstrapArgs // {
         inherit openjdk15-bootstrap;
       });
 
     openjdk17-bootstrap = mkBootstrap adoptopenjdk-17
-      ../development/compilers/openjdk/16.nix
+      ../development/compilers/openjdk/16
       (bootstrapArgs // {
         inherit openjdk16-bootstrap;
       });
 
     openjdk18-bootstrap = mkBootstrap adoptopenjdk-17
-      ../development/compilers/openjdk/17.nix
+      ../development/compilers/openjdk/17
       (bootstrapArgs // {
         inherit openjdk17-bootstrap;
       });
 
     openjdk8 = mkOpenjdk
-      ../development/compilers/openjdk/8.nix
+      ../development/compilers/openjdk/8
       ../development/compilers/zulu/8.nix
       { };
 
     openjdk11 = mkOpenjdk
-      ../development/compilers/openjdk/11.nix
+      ../development/compilers/openjdk/11
       ../development/compilers/zulu/11.nix
       { openjfx = openjfx11; };
 
-    openjdk12 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/12.nix {
+    openjdk12 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/12 {
         /* build segfaults with gcc9 or newer, so use gcc8 like Debian does */
         stdenv = gcc8Stdenv;
         openjfx = openjfx11;
     };
 
-    openjdk13 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/13.nix {
+    openjdk13 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/13 {
       inherit openjdk13-bootstrap;
       openjfx = openjfx11;
     };
 
-    openjdk14 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/14.nix {
+    openjdk14 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/14 {
       inherit openjdk14-bootstrap;
       openjfx = openjfx11;
     };
 
-    openjdk15 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/15.nix {
+    openjdk15 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/15 {
       inherit openjdk15-bootstrap;
       openjfx = openjfx15;
     };
 
-    openjdk16 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/16.nix {
+    openjdk16 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/16 {
       inherit openjdk16-bootstrap;
       openjfx = openjfx15;
     };
 
     openjdk17 = mkOpenjdk
-      ../development/compilers/openjdk/17.nix
+      ../development/compilers/openjdk/17
       ../development/compilers/zulu/17.nix
       {
         inherit openjdk17-bootstrap;
@@ -192,7 +194,7 @@ in {
       };
 
     openjdk18 = mkOpenjdk
-      ../development/compilers/openjdk/18.nix
+      ../development/compilers/openjdk/18
       ../development/compilers/zulu/18.nix
       {
         inherit openjdk18-bootstrap;
@@ -200,7 +202,7 @@ in {
       };
 
     openjdk19 = mkOpenjdk
-      ../development/compilers/openjdk/19.nix
+      ../development/compilers/openjdk/19
       ../development/compilers/zulu/19.nix
       {
         openjdk19-bootstrap = temurin-bin.jdk-19;
@@ -208,7 +210,7 @@ in {
       };
 
     openjdk20 = mkOpenjdk
-      ../development/compilers/openjdk/20.nix
+      ../development/compilers/openjdk/20
       ../development/compilers/zulu/20.nix
       {
         openjdk20-bootstrap = temurin-bin.jdk-20;
@@ -216,7 +218,7 @@ in {
       };
 
     openjdk21 = mkOpenjdk
-      ../development/compilers/openjdk/21.nix
+      ../development/compilers/openjdk/21
       ../development/compilers/zulu/21.nix
       {
         openjdk21-bootstrap = temurin-bin.jdk-21;
@@ -224,7 +226,7 @@ in {
       };
 
     openjdk22 = mkOpenjdk
-      ../development/compilers/openjdk/22.nix
+      ../development/compilers/openjdk/22
       ../development/compilers/zulu/22.nix
       {
         openjdk22-bootstrap = temurin-bin.jdk-21;

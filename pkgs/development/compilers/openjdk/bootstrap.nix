@@ -1,7 +1,9 @@
 { stdenv
+, pkgs
 , runCommand, fetchurl, zlib
 
 , version
+, headless ? false
 }:
 
 assert stdenv.hostPlatform.libc == "glibc";
@@ -15,7 +17,7 @@ let
 
   src = if stdenv.hostPlatform.system == "x86_64-linux" then
     (if version == "10"    then fetchboot "10" "x86_64" "08085fsxc1qhqiv3yi38w8lrg3vm7s0m2yvnwr1c92v019806yq2"
-    else if version == "8" then fetchboot "8"  "x86_64" "18zqx6jhm3lizn9hh6ryyqc9dz3i96pwaz8f6nxfllk70qi5gvks"
+    else if version == "8" then pkgs.callPackage ./7.nix { inherit headless; }
     else throw "No bootstrap jdk for version ${version}")
   else if stdenv.hostPlatform.system == "i686-linux" then
     (if version == "10"    then fetchboot "10" "i686" "1blb9gyzp8gfyggxvggqgpcgfcyi00ndnnskipwgdm031qva94p7"
