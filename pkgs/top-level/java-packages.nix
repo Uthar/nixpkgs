@@ -50,7 +50,7 @@ in {
       then callPackage path args
       # bootstrap from source if possible
       else if stdenv.isLinux && stdenv.hostPlatform.isx86_64
-      then callPackage path args
+      then callPackage path (gnomeArgs // args)
       # only linux has the headless option
       else if stdenv.isLinux
       then adoptopenjdk.jdk-hotspot.override { headless = true; }
@@ -107,6 +107,10 @@ in {
       ../development/compilers/openjdk/bootstrap.nix
       { version = "8"; };
 
+    openjdk9-bootstrap = openjdk8;
+
+    openjdk10-bootstrap = openjdk9;
+
     openjdk11-bootstrap = mkBootstrap adoptopenjdk-11
       ../development/compilers/openjdk/bootstrap.nix
       { version = "10"; };
@@ -155,11 +159,11 @@ in {
       { };
 
     openjdk9 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/9 {
-      openjdk9-bootstrap = openjdk8;
+      inherit openjdk9-bootstrap;
     };
 
     openjdk10 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/10 {
-      openjdk10-bootstrap = openjdk9;
+      inherit openjdk10-bootstrap;
     };
 
     openjdk11 = mkOpenjdk

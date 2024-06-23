@@ -4,6 +4,10 @@
 
 , version
 , headless ? false
+, javaPackages
+, GConf
+, gnome_vfs
+, glib
 }:
 
 assert stdenv.hostPlatform.libc == "glibc";
@@ -16,9 +20,6 @@ let
   };
 
   blobs = {
-    "x86_64-linux" = {
-      "10" = fetchboot "10" "x86_64" "08085fsxc1qhqiv3yi38w8lrg3vm7s0m2yvnwr1c92v019806yq2";
-    };
     "i686-linux" = {
       "8" = fetchboot "8"  "i686" "1yx04xh8bqz7amg12d13rw5vwa008rav59mxjw1b9s6ynkvfgqq9";
       "10" = fetchboot "10" "i686" "1blb9gyzp8gfyggxvggqgpcgfcyi00ndnnskipwgdm031qva94p7";
@@ -28,6 +29,10 @@ let
   jdks = {
     "x86_64-linux" = {
       "8" = pkgs.callPackage ./bootstrap {};
+      "10" = pkgs.callPackage ./10 {
+        inherit headless GConf gnome_vfs glib;
+        inherit (javaPackages.compiler) openjdk10-bootstrap;
+      };
     };
   };
 
