@@ -72,14 +72,16 @@ rustPlatform.buildRustPackage rec {
   '';
 
   meta = with lib; {
-    description = "A Ruby autoformatter";
+    description = "Ruby autoformatter";
     homepage = "https://github.com/fables-tales/rubyfmt";
     license = licenses.mit;
     maintainers = with maintainers; [ bobvanderlinden ];
-    # = note: Undefined symbols for architecture x86_64:
-    #       "_utimensat", referenced from:
-    #           _utime_internal in librubyfmt-3c969812b3b27083.rlib(file.o)
-    broken = stdenv.isDarwin && stdenv.isx86_64;
+    # https://github.com/NixOS/nixpkgs/issues/320722
+    broken = true
+      # = note: Undefined symbols for architecture x86_64:
+      #       "_utimensat", referenced from:
+      #           _utime_internal in librubyfmt-3c969812b3b27083.rlib(file.o)
+      || stdenv.isDarwin && stdenv.isx86_64;
     mainProgram = "rubyfmt";
   };
 }

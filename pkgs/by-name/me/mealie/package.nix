@@ -9,12 +9,12 @@
 }:
 
 let
-  version = "1.7.0";
+  version = "1.9.0";
   src = fetchFromGitHub {
     owner = "mealie-recipes";
     repo = "mealie";
     rev = "v${version}";
-    hash = "sha256-z7kLBDzvzPWY7XmpROMpw3LcDpsl+hA+w1SdhrD/yNU=";
+    hash = "sha256-gg7ClclBS9j9n4/3HLxbX8HXTz9Zw5+BYG2MEYRsRBU=";
   };
 
   frontend = callPackage (import ./mealie-frontend.nix src version) { };
@@ -124,7 +124,7 @@ in pythonpkgs.buildPythonPackage rec {
   };
 
   meta = with lib; {
-    description = "A self hosted recipe manager and meal planner";
+    description = "Self hosted recipe manager and meal planner";
     longDescription = ''
       Mealie is a self hosted recipe manager and meal planner with a REST API and a reactive frontend
       application built in NuxtJS for a pleasant user experience for the whole family. Easily add recipes into your

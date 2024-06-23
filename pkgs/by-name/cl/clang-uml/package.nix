@@ -17,13 +17,13 @@
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "clang-uml";
-  version = "0.5.2";
+  version = "0.5.3";
 
   src = fetchFromGitHub {
     owner = "bkryza";
     repo = "clang-uml";
     rev = finalAttrs.version;
-    hash = "sha256-ZVaMLsI1FK05xFfMmlLBPop7DR3fDstnfgjdBmsjNBA=";
+    hash = "sha256-ghnbOjVYw0zdFK/SDJ3sOObu6I7ROVNzYl1hovWju/Q=";
   };
 
   nativeBuildInputs = [
@@ -64,7 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
   dontStrip = debug;
 
   meta = with lib; {
-    description = "Customizable automatic UML diagram generator for C++ based on Clang.";
+    description = "Customizable automatic UML diagram generator for C++ based on Clang";
     longDescription = ''
       clang-uml is an automatic C++ to UML class, sequence, package and include diagram generator, driven by YAML configuration files.
       The main idea behind the project is to easily maintain up-to-date diagrams within a code-base or document legacy code.

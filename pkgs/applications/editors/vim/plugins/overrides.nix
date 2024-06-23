@@ -60,6 +60,9 @@
 , zsh
 , # codeium-nvim dependencies
   codeium
+, # codesnap-nvim dependencies
+  clang
+, libuv
 , # command-t dependencies
   getconf
 , ruby
@@ -135,7 +138,7 @@
   barbecue-nvim = super.barbecue-nvim.overrideAttrs {
     dependencies = with self; [ nvim-lspconfig nvim-navic nvim-web-devicons ];
     meta = {
-      description = "A VS Code like winbar for Neovim";
+      description = "VS Code like winbar for Neovim";
       homepage = "https://github.com/utilyre/barbecue.nvim";
       license = lib.licenses.mit;
       maintainers = with lib.maintainers; [ lightquantum ];
@@ -213,6 +216,10 @@
     postPatch = ''
       sed -i -e 's/require "health"/vim.health/' lua/clipboard-image/health.lua
     '';
+  };
+
+  cmp-ai = super.cmp-ai.overrideAttrs {
+    dependencies = with self; [ nvim-cmp plenary-nvim ];
   };
 
   cmp-clippy = super.cmp-clippy.overrideAttrs {
@@ -396,6 +403,54 @@
     '';
   };
 
+  codesnap-nvim =
+    let
+      version = "1.3.1";
+      src = fetchFromGitHub {
+        owner = "mistricky";
+        repo = "codesnap.nvim";
+        rev = "refs/tags/v${version}";
+        hash = "sha256-nS/bAWsBQ1L4M9437Yp6FdmHoogzalKlLIAXnRZyMp0=";
+      };
+      codesnap-lib = rustPlatform.buildRustPackage {
+        pname = "codesnap-lib";
+        inherit version src;
+
+        sourceRoot = "${src.name}/generator";
+
+        cargoHash = "sha256-FTQl5WIGEf+RQKYJ4BbIE3cCeN+NYUp7VXIrpxB05tU=";
+
+        nativeBuildInputs = [
+          pkg-config
+          rustPlatform.bindgenHook
+        ];
+
+        buildInputs = [
+          libuv.dev
+        ] ++ lib.optionals stdenv.isDarwin [
+          darwin.apple_sdk.frameworks.AppKit
+        ];
+      };
+    in
+    buildVimPlugin {
+      pname = "codesnap.nvim";
+      inherit version src;
+
+      # - Remove the shipped pre-built binaries
+      # - Copy the resulting binary from the codesnap-lib derivation
+      # Note: the destination should be generator.so, even on darwin
+      # https://github.com/mistricky/codesnap.nvim/blob/main/scripts/build_generator.sh
+      postInstall = let
+        extension = if stdenv.isDarwin then "dylib" else "so";
+      in ''
+        rm -r $out/lua/*.so
+        cp ${codesnap-lib}/lib/libgenerator.${extension} $out/lua/generator.so
+      '';
+
+      doInstallCheck = true;
+      nvimRequireCheck = "codesnap";
+    };
+
   command-t = super.command-t.overrideAttrs {
     nativeBuildInputs = [ getconf ruby ];
     buildPhase = ''
@@ -453,13 +508,17 @@
     dependencies = with self; [ copilot-lua plenary-nvim ];
   };
 
-  copilot-vim = super.copilot-vim.overrideAttrs {
+  copilot-vim = super.copilot-vim.overrideAttrs (old: {
     postInstall = ''
-      substituteInPlace $out/autoload/copilot/agent.vim \
+      substituteInPlace $out/autoload/copilot/client.vim \
         --replace "  let node = get(g:, 'copilot_node_command', ''\'''\')" \
                   "  let node = get(g:, 'copilot_node_command', '${nodejs}/bin/node')"
     '';
-  };
+
+    meta = old.meta // {
+      license = lib.licenses.unfree;
+    };
+  });
 
   coq_nvim = super.coq_nvim.overrideAttrs {
     passthru.python3Dependencies = ps:
@@ -1007,6 +1066,10 @@
     dependencies = [ self.plenary-nvim ];
   };
 
+  neotest-playwright = super.neotest-playwright.overrideAttrs {
+    dependencies = [ self.telescope-nvim ];
+  };
+
   neo-tree-nvim = super.neo-tree-nvim.overrideAttrs {
     dependencies = with self; [ plenary-nvim nui-nvim ];
   };
@@ -1036,6 +1099,13 @@
 
     doInstallCheck = true;
     nvimRequireCheck = "dapui";
+  };
+
+  nvim-genghis = super.nvim-genghis.overrideAttrs {
+    dependencies = [ self.dressing-nvim ];
+
+    doInstallCheck = true;
+    nvimRequireCheck = "genghis";
   };
 
   nvim-lsputils = super.nvim-lsputils.overrideAttrs {
@@ -1089,7 +1159,7 @@
         inherit (old) version src;
         sourceRoot = "${old.src.name}/spectre_oxi";
 
-        cargoHash = "sha256-4XAQFKsTM5IxNld1TIC0i861i/3uPjwsDWoW7ZbHfXg=";
+        cargoHash = "sha256-ZBlxJjkHb2buvXK6VGP6FMnSFk8RUX7IgHjNofnGDAs=";
 
         preCheck = ''
           mkdir tests/tmp/
@@ -1464,6 +1534,11 @@
       substituteInPlace lua/telescope/_extensions/zoxide/config.lua \
         --replace "zoxide query -ls" "${zoxide}/bin/zoxide query -ls"
     '';
+  };
+
+  todo-comments-nvim = super.todo-comments-nvim.overrideAttrs {
+    dependencies = [ self.plenary-nvim ];
+    nvimRequireCheck = "todo-comments";
   };
 
   tup =
@@ -1895,7 +1970,7 @@
     '';
 
     meta = with lib; {
-      description = "A code-completion engine for Vim";
+      description = "Code-completion engine for Vim";
       homepage = "https://github.com/Valloric/YouCompleteMe";
       license = licenses.gpl3;
       maintainers = with maintainers; [ marcweber jagajaga ];

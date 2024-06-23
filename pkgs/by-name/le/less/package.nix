@@ -25,6 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
       url = "https://gitlab.archlinux.org/archlinux/packaging/packages/less/-/raw/1d570db0c84fe95799f460526492e45e24c30ad0/backport-007521ac3c95bc76.patch";
       hash = "sha256-BT8DLIu7oVhL5XL50uFVUp97qjklcvRHy85UQwVKAmc=";
     })
+    (fetchpatch {
+      # https://github.com/gwsw/less/pull/416
+      name = "freebsd.patch";
+      url = "https://github.com/gwsw/less/commit/3ecff3752078fda90fd46c9f020f2a2bb548dd71.patch";
+      hash = "sha256-Iv2Jm/7wwRsyLchoEvYz9VziySJ6sI4YbSgFTdQrV+I=";
+    })
   ];
 
   buildInputs = [
@@ -42,7 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     homepage = "https://www.greenwoodsoftware.com/less/";
-    description = "A more advanced file pager than 'more'";
+    description = "More advanced file pager than 'more'";
     changelog = "https://www.greenwoodsoftware.com/less/news.${finalAttrs.version}.html";
     license = lib.licenses.gpl3Plus;
     mainProgram = "less";

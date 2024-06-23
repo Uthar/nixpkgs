@@ -40,6 +40,7 @@ let
       };
       argsOverride = {
         inherit version;
+        pname = "linux-hardened";
         modDirVersion = modDirVersion' + kernelPatches.hardened.${kernel.meta.branch}.extra;
         src = fetchurl {
           url = "mirror://kernel/linux/kernel/v${major}.x/linux-${version}.tar.xz";
@@ -193,6 +194,7 @@ in {
         kernelPatches.rust_1_75
         kernelPatches.rust_1_76
         kernelPatches.rust_1_77-6_8
+        kernelPatches.rust_1_78
       ];
     };
 
@@ -202,6 +204,7 @@ in {
         kernelPatches.bridge_stp_helper
         kernelPatches.request_key_helper
         kernelPatches.rust_1_77-6_9
+        kernelPatches.rust_1_78
       ];
     };
 
@@ -314,8 +317,6 @@ in {
     acpi_call = callPackage ../os-specific/linux/acpi-call {};
 
     akvcam = callPackage ../os-specific/linux/akvcam { };
-
-    amdgpu-pro = callPackage ../os-specific/linux/amdgpu-pro { };
 
     apfs = callPackage ../os-specific/linux/apfs { };
 
@@ -589,6 +590,8 @@ in {
 
     hid-ite8291r3 = callPackage ../os-specific/linux/hid-ite8291r3 { };
 
+    hid-t150 = callPackage ../os-specific/linux/hid-t150 { };
+
     hid-tmff2 = callPackage ../os-specific/linux/hid-tmff2 { };
 
     drbd = callPackage ../os-specific/linux/drbd/driver.nix { };
@@ -600,6 +603,7 @@ in {
     rtl8723bs = throw "rtl8723bs was added in mainline kernel version 4.12"; # Added 2023-06-14
     vm-tools = self.mm-tools;
     xmm7360-pci = throw "Support for the XMM7360 WWAN card was added to the iosm kmod in mainline kernel version 5.18";
+    amdgpu-pro = throw "amdgpu-pro was removed due to lack of maintenance"; # Added 2024-06-16
   });
 
   hardenedPackagesFor = kernel: overrides: packagesFor (hardenedKernelFor kernel overrides);

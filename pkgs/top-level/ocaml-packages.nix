@@ -480,6 +480,8 @@ let
 
     ezjsonm = callPackage ../development/ocaml-modules/ezjsonm { };
 
+    ezjsonm-encoding = callPackage ../development/ocaml-modules/ezjsonm-encoding { };
+
     ezxmlm = callPackage ../development/ocaml-modules/ezxmlm { };
 
     ### F ###
@@ -1047,6 +1049,8 @@ let
     };
 
     mec = callPackage ../development/ocaml-modules/mec { };
+
+    memprof-limits = callPackage ../development/ocaml-modules/memprof-limits { };
 
     memtrace = callPackage ../development/ocaml-modules/memtrace { };
 

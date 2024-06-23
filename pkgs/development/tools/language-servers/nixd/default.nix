@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   boost182,
   gtest,
   llvmPackages,
@@ -19,13 +20,13 @@
 
 let
   common = rec {
-    version = "2.2.0";
+    version = "2.2.1";
 
     src = fetchFromGitHub {
       owner = "nix-community";
       repo = "nixd";
       rev = version;
-      hash = "sha256-/8Ty1I130vWFidedt+WEaaFHS/zMFVu9vpq4Z3EBjGw=";
+      hash = "sha256-Y5MB3BQBRkSe+10enlric1GTmJCN36clbOSos6fzoRM=";
     };
 
     nativeBuildInputs = [
@@ -35,6 +36,8 @@ let
     ];
 
     mesonBuildType = "release";
+
+    strictDeps = true;
 
     doCheck = true;
 
@@ -76,7 +79,7 @@ in
       };
 
       meta = common.meta // {
-        description = "A Nix language frontend, parser & semantic analysis";
+        description = "Nix language frontend, parser & semantic analysis";
         mainProgram = "nixf-tidy";
       };
     }
@@ -108,7 +111,7 @@ in
       };
 
       meta = common.meta // {
-        description = "A supporting library that wraps C++ nix";
+        description = "Supporting library that wraps C++ nix";
       };
     }
   );
@@ -129,6 +132,8 @@ in
         boost182
       ];
 
+      nativeBuildInputs = common.nativeBuildInputs ++ [ cmake ];
+
       env.CXXFLAGS = "-include ${nix.dev}/include/nix/config.h";
 
       # See https://github.com/nix-community/nixd/issues/519
@@ -140,7 +145,7 @@ in
       };
 
       meta = common.meta // {
-        description = "A feature-rich Nix language server interoperating with C++ nix";
+        description = "Feature-rich Nix language server interoperating with C++ nix";
         mainProgram = "nixd";
       };
     }

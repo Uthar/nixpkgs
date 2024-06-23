@@ -33,7 +33,7 @@ let
     .${targetPlatform.system} or (throw "${targetPlatform.system} is unsupported.");
 in
 stdenv.mkDerivation (finalAttrs: {
-  name = "bombsquad";
+  pname = "bombsquad";
   version = "1.7.35";
   sourceRoot = ".";
   src = fetchurl {
@@ -103,7 +103,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    description = "A free, multiplayer, arcade-style game for up to eight players that combines elements of fighting games and first-person shooters (FPS)";
+    description = "Free, multiplayer, arcade-style game for up to eight players that combines elements of fighting games and first-person shooters (FPS)";
     homepage = "https://ballistica.net";
     changelog = "https://ballistica.net/downloads?display=changelog";
     license = with lib.licenses; [

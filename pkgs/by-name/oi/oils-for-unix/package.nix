@@ -52,13 +52,13 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
-    description = "A Unix shell with JSON-compatible structured data. It's our upgrade path from bash to a better language and runtime.";
+    description = "Unix shell with JSON-compatible structured data. It's our upgrade path from bash to a better language and runtime";
     homepage = "https://www.oilshell.org/";
 
     license = lib.licenses.asl20;
 
     platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ lheckemann alva mkg20001 melkor333 ];
+    maintainers = with lib.maintainers; [ alva mkg20001 melkor333 ];
     changelog = "https://www.oilshell.org/release/${version}/changelog.html";
   };
 

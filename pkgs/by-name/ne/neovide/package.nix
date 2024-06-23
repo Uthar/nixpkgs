@@ -96,7 +96,11 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } rec {
         --prefix LD_LIBRARY_PATH : ${libPath}
     '';
 
-  postInstall = ''
+  postInstall = lib.optionalString stdenv.isDarwin ''
+    mkdir -p $out/Applications
+    cp -r extra/osx/Neovide.app $out/Applications
+    ln -s $out/bin $out/Applications/Neovide.app/Contents/MacOS
+  '' + lib.optionalString stdenv.isLinux ''
     for n in 16x16 32x32 48x48 256x256; do
       install -m444 -D "assets/neovide-$n.png" \
         "$out/share/icons/hicolor/$n/apps/neovide.png"
@@ -108,7 +112,7 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } rec {
   disallowedReferences = [ SKIA_SOURCE_DIR ];
 
   meta = with lib; {
-    description = "This is a simple graphical user interface for Neovim.";
+    description = "This is a simple graphical user interface for Neovim";
     mainProgram = "neovide";
     homepage = "https://github.com/neovide/neovide";
     changelog = "https://github.com/neovide/neovide/releases/tag/${version}";

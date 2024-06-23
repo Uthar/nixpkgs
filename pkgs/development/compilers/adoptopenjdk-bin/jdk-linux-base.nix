@@ -16,7 +16,7 @@
 # runtime dependencies
 , cups
 # runtime dependencies for GTK+ Look and Feel
-, gtkSupport ? true
+, headless ? false
 , cairo
 , glib
 , gtk3
@@ -26,7 +26,7 @@ let
   cpuName = stdenv.hostPlatform.parsed.cpu.name;
   runtimeDependencies = [
     cups
-  ] ++ lib.optionals gtkSupport [
+  ] ++ lib.optionals (!headless) [
     cairo glib gtk3
   ];
   runtimeLibraryPath = lib.makeLibraryPath runtimeDependencies;

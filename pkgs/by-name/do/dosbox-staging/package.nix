@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchpatch,
   SDL2,
   SDL2_image,
   SDL2_net,
@@ -40,6 +41,14 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-XGssEyX+AVv7/ixgGTRtPFjsUSX0FT0fhP+TXsFl2fY=";
   };
+
+  patches = [
+    (fetchpatch {
+      name = "darwin-allow-bypass-wraps.patch";
+      url = "https://github.com/dosbox-staging/dosbox-staging/commit/9f0fc1dc762010e5f7471d01c504d817a066cae3.patch";
+      hash = "sha256-IzxRE1Vr+M8I5hdy80UwebjJ5R1IlH9ymaYgs6VwAO4=";
+    })
+  ];
 
   nativeBuildInputs = [
     gtest
@@ -102,7 +111,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     homepage = "https://dosbox-staging.github.io/";
-    description = "A modernized DOS emulator";
+    description = "Modernized DOS emulator";
     longDescription = ''
       DOSBox Staging is an attempt to revitalize DOSBox's development
       process. It's not a rewrite, but a continuation and improvement on the
