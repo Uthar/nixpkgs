@@ -46,7 +46,7 @@ in {
 
     mkBootstrap = adoptopenjdk: path: args:
       /* adoptopenjdk not available for i686, so fall back to our old builds for bootstrapping */
-      if stdenv.hostPlatform.isi686
+      if stdenv.isLinux && stdenv.hostPlatform.isi686
       then callPackage path args
       # bootstrap from source if possible
       else if stdenv.isLinux && stdenv.hostPlatform.isx86_64

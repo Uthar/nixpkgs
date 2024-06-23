@@ -15,28 +15,41 @@ let
     inherit sha256;
   };
 
-  src = if stdenv.hostPlatform.system == "x86_64-linux" then
-    (if version == "10"    then fetchboot "10" "x86_64" "08085fsxc1qhqiv3yi38w8lrg3vm7s0m2yvnwr1c92v019806yq2"
-    else if version == "8" then pkgs.callPackage ./7.nix { inherit headless; }
-    else throw "No bootstrap jdk for version ${version}")
-  else if stdenv.hostPlatform.system == "i686-linux" then
-    (if version == "10"    then fetchboot "10" "i686" "1blb9gyzp8gfyggxvggqgpcgfcyi00ndnnskipwgdm031qva94p7"
-    else if version == "8" then fetchboot "8"  "i686" "1yx04xh8bqz7amg12d13rw5vwa008rav59mxjw1b9s6ynkvfgqq9"
-    else throw "No bootstrap for version")
-  else throw "No bootstrap jdk for system ${stdenv.hostPlatform.system}";
+  blobs = {
+    "x86_64-linux" = {
+      "10" = fetchboot "10" "x86_64" "08085fsxc1qhqiv3yi38w8lrg3vm7s0m2yvnwr1c92v019806yq2";
+    };
+    "i686-linux" = {
+      "8" = fetchboot "8"  "i686" "1yx04xh8bqz7amg12d13rw5vwa008rav59mxjw1b9s6ynkvfgqq9";
+      "10" = fetchboot "10" "i686" "1blb9gyzp8gfyggxvggqgpcgfcyi00ndnnskipwgdm031qva94p7";
+    };
+  };
 
-  bootstrap = runCommand "openjdk-bootstrap" {
-    passthru.home = "${bootstrap}/lib/openjdk";
-  } ''
-    tar xvf ${src}
-    mv openjdk-bootstrap $out
+  jdks = {
+    "x86_64-linux" = {
+      "8" = pkgs.callPackage ./bootstrap {};
+    };
+  };
 
-    LIBDIRS="$(find $out -name \*.so\* -exec dirname {} \; | sort | uniq | tr '\n' ':')"
+  blob = blobs.${stdenv.hostPlatform.system}.${version} or null;
 
-    find "$out" -type f -print0 | while IFS= read -r -d "" elf; do
-      isELF "$elf" || continue
-      patchelf --set-interpreter $(cat "${stdenv.cc}/nix-support/dynamic-linker") "$elf" || true
-      patchelf --set-rpath "${stdenv.cc.libc}/lib:${stdenv.cc.cc.lib}/lib:${zlib}/lib:$LIBDIRS" "$elf" || true
-    done
-  '';
+  jdk = jdks.${stdenv.hostPlatform.system}.${version} or null;
+
+  bootstrap =
+    if jdk != null then jdk
+    else if blob != null then runCommand "openjdk-bootstrap" {
+      passthru.home = "${bootstrap}/lib/openjdk";
+    } ''
+      tar xvf ${blob}
+      mv openjdk-bootstrap $out
+      
+      LIBDIRS="$(find $out -name \*.so\* -exec dirname {} \; | sort | uniq | tr '\n' ':')"
+      
+      find "$out" -type f -print0 | while IFS= read -r -d "" elf; do
+        isELF "$elf" || continue
+        patchelf --set-interpreter $(cat "${stdenv.cc}/nix-support/dynamic-linker") "$elf" || true
+        patchelf --set-rpath "${stdenv.cc.libc}/lib:${stdenv.cc.cc.lib}/lib:${zlib}/lib:$LIBDIRS" "$elf" || true
+      done
+    ''
+    else throw "No bootstrap for jdk ${version} for system ${stdenv.hostPlatform.system}";
 in bootstrap
