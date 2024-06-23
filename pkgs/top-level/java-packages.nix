@@ -158,6 +158,10 @@ in {
       openjdk9-bootstrap = openjdk8;
     };
 
+    openjdk10 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/10 {
+      openjdk10-bootstrap = openjdk9;
+    };
+
     openjdk11 = mkOpenjdk
       ../development/compilers/openjdk/11
       ../development/compilers/zulu/11.nix
