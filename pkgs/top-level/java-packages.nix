@@ -115,10 +115,12 @@ in {
       ../development/compilers/openjdk/bootstrap.nix
       { version = "10"; };
 
+    openjdk12-bootstrap = openjdk11;
+
     openjdk13-bootstrap = mkBootstrap adoptopenjdk-13
       ../development/compilers/openjdk/12
       (bootstrapArgs // {
-        inherit openjdk11-bootstrap;
+        inherit openjdk12-bootstrap;
         /* build segfaults with gcc9 or newer, so use gcc8 like Debian does */
         stdenv = gcc8Stdenv;
       });
@@ -173,8 +175,9 @@ in {
 
     openjdk12 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/12 {
         /* build segfaults with gcc9 or newer, so use gcc8 like Debian does */
-        stdenv = gcc8Stdenv;
-        openjfx = openjfx11;
+      stdenv = gcc8Stdenv;
+      inherit openjdk12-bootstrap;
+      openjfx = openjfx11;
     };
 
     openjdk13 = mkOpenjdkLinuxOnly ../development/compilers/openjdk/13 {

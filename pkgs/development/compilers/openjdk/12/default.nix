@@ -1,7 +1,7 @@
 { stdenv, lib, fetchurl, bash, pkg-config, autoconf, cpio, file, which, unzip
 , zip, perl, cups, freetype, alsa-lib, libjpeg, giflib, libpng, zlib, lcms2
 , libX11, libICE, libXrender, libXext, libXt, libXtst, libXi, libXinerama
-, libXcursor, libXrandr, fontconfig, openjdk11-bootstrap, fetchpatch
+, libXcursor, libXrandr, fontconfig, openjdk12-bootstrap, fetchpatch
 , setJavaClassPath
 , headless ? false
 , enableJavaFX ? false, openjfx
@@ -14,7 +14,7 @@ let
   build = "ga";
 
   # when building a headless jdk, also bootstrap it with a headless jdk
-  openjdk-bootstrap = openjdk11-bootstrap.override { inherit headless; };
+  openjdk-bootstrap = openjdk12-bootstrap.override { inherit headless; };
 
   openjdk = stdenv.mkDerivation rec {
     pname = "openjdk" + lib.optionalString headless "-headless";
