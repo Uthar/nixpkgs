@@ -15598,7 +15598,12 @@ with pkgs;
 
   inherit (ocaml-ng.ocamlPackages) stog;
 
-  stumpwm = sbclPackages.stumpwm;
+  stumpwm = callPackage ../applications/window-managers/stumpwm {
+    stdenv = stdenvNoCC;
+    sbcl = sbcl.withPackages (ps: with ps; [
+      alexandria cl-ppcre clx
+    ]);
+  };
 
   stumpwm-unwrapped = sbclPackages.stumpwm-unwrapped;
 

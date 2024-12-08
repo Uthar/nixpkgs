@@ -190,44 +190,6 @@ let
     lispLibs = super.mathkit.lispLibs ++ [ super.sb-cga ];
   };
 
-  stumpwm = super.stumpwm.overrideLispAttrs (o: rec {
-    version = "22.11";
-    src = pkgs.fetchFromGitHub {
-      owner = "stumpwm";
-      repo = "stumpwm";
-      rev = version;
-      hash = "sha256-zXj17ucgyFhv7P0qEr4cYSVRPGrL1KEIofXWN2trr/M=";
-    };
-    buildScript = pkgs.writeText "build-stumpwm.lisp" ''
-      (load "${super.stumpwm.asdfFasl}/asdf.${super.stumpwm.faslExt}")
-
-      (asdf:load-system 'stumpwm)
-
-      ;; Prevents package conflict error
-      (when (uiop:version<= "3.1.5" (asdf:asdf-version))
-        (uiop:symbol-call '#:asdf '#:register-immutable-system :stumpwm)
-        (dolist (system-name (uiop:symbol-call '#:asdf
-                                               '#:system-depends-on
-                                               (asdf:find-system :stumpwm)))
-          (uiop:symbol-call '#:asdf '#:register-immutable-system system-name)))
-
-      ;; Prevents "cannot create /homeless-shelter" error
-      (asdf:disable-output-translations)
-
-      (sb-ext:save-lisp-and-die
-        "stumpwm"
-        :executable t
-        :purify t
-        #+sb-core-compression :compression
-        #+sb-core-compression t
-        :toplevel #'stumpwm:stumpwm)
-    '';
-    installPhase = ''
-      mkdir -p $out/bin
-      cp -v stumpwm $out/bin
-    '';
-  });
-
   stumpwm-unwrapped = super.stumpwm;
 
   clfswm = super.clfswm.overrideAttrs (o: rec {
